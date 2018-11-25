@@ -7,6 +7,7 @@ repositories {
 }
 dependencies {
     compile 'org.apache.jena:jena-arq:3.9.0'
+    compile 'commons-cli:commons-cli:1.4'
 
     testCompile 'junit:junit:4.+'
 }
