@@ -36,6 +36,9 @@ public class RDFLint {
     // Set parameter
     String baseUri = cmd.getOptionValue("baseuri");
     String parentPath = cmd.getOptionValue("targetdir");
+    if (parentPath == null) {
+      parentPath = ".";
+    }
 
     // Main procedure
     RDFLint lint = new RDFLint();
