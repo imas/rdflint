@@ -11,8 +11,8 @@ RDF linter
 Download from jitpack and run.
 
 ```
-$ wget https://jitpack.io/com/github/takemikami/rdflint/0.0.1/rdflint-0.0.1-all.jar
-$ java -jar rdflint-0.0.1-all.jar -baseuri https://sparql.crssnky.xyz/imasrdf/ -targetdir example/dataset
+$ wget https://jitpack.io/com/github/takemikami/rdflint/0.0.1/rdflint-0.0.2-all.jar
+$ java -jar rdflint-0.0.2-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
 # Build and execute
@@ -26,5 +26,5 @@ $ gradle shadowJar
 Run rdflint.
 
 ```
-$ java -jar build/libs/rdflint-all.jar -baseuri https://sparql.crssnky.xyz/imasrdf/ -targetdir example/dataset
+$ java -jar build/libs/rdflint-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
