@@ -1,6 +1,9 @@
 package com.github.takemikami.rdflint;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,7 +21,15 @@ import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFParser;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.yaml.snakeyaml.Yaml;
 
 
 public class RDFLint {
@@ -29,6 +40,7 @@ public class RDFLint {
     Options options = new Options();
     options.addOption("baseuri", true, "RDF base URI");
     options.addOption("targetdir", true, "Target Directory Path");
+    options.addOption("config", true, "Configuration file Path");
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
@@ -39,19 +51,35 @@ public class RDFLint {
     if (parentPath == null) {
       parentPath = ".";
     }
+    String configPath = cmd.getOptionValue("config");
 
     // Main procedure
     RDFLint lint = new RDFLint();
-    LintProblemSet problems = lint.lintRDFDataSet(baseUri, parentPath);
+    RDFLintParameters params = lint.loadConfig(configPath);
+    if (baseUri != null) {
+      params.setBaseUri(baseUri);
+    }
+    LintProblemSet problems = lint.lintRDFDataSet(params, parentPath);
     lint.printLintProblem(problems);
     if (problems.hasProblem()) {
       System.exit(1);
     }
   }
 
-  public LintProblemSet lintRDFDataSet(String baseUri, String targetDir) throws IOException {
+  public RDFLintParameters loadConfig(String configPath) throws IOException {
+    if (configPath == null) {
+      return new RDFLintParameters();
+    }
+    Yaml yaml = new Yaml();
+    return yaml
+        .loadAs(new FileReader(new File(configPath).getCanonicalPath()), RDFLintParameters.class);
+  }
+
+  public LintProblemSet lintRDFDataSet(RDFLintParameters params, String targetDir)
+      throws IOException {
     LintProblemSet rtn = new LintProblemSet();
     String parentPath = new File(targetDir).getCanonicalPath();
+    String baseUri = params.getBaseUri();
 
     // parse rdf & ttl
     Map<String, List<Triple>> fileTripleSet = Files
@@ -91,8 +119,8 @@ public class RDFLint {
           })
           .collect(Collectors.toSet());
 
-      // check undefined uri
       fileTripleSet.forEach((f, l) -> {
+        // check undefined uri
         l.forEach(t -> {
           for (Node n : new Node[]{t.getPredicate(), t.getObject()}) {
             if (n.isURI() && n.getURI().startsWith(baseUri) && !subjects.contains(n.getURI())) {
@@ -106,10 +134,52 @@ public class RDFLint {
             }
           }
         });
+
+        // execute sparql & custom validation
+        if (params.getRules() != null) {
+          Graph g = Factory.createGraphMem();
+          l.forEach(g::add);
+          Model m = ModelFactory.createModelForGraph(g);
+
+          params.getRules().stream()
+              .filter(r -> f.matches(r.getTarget()))
+              .forEach(r -> {
+                Query query = QueryFactory.create(r.getQuery());
+                QueryExecution qe = QueryExecutionFactory.create(query, m);
+
+                Binding binding = new Binding();
+                binding.setVariable("rs", qe.execSelect());
+                binding.setVariable("log", new ProblemLogger(rtn, f, r.getName()));
+                GroovyShell shell = new GroovyShell(binding, new CompilerConfiguration());
+                shell.evaluate(r.getValid());
+              });
+        }
       });
     }
 
     return rtn;
+  }
+
+  // Problem Logger for groovy
+  public class ProblemLogger {
+
+    LintProblemSet set;
+    String file;
+    String name;
+
+    public ProblemLogger(LintProblemSet set, String file, String name) {
+      this.set = set;
+      this.file = file;
+      this.name = name;
+    }
+
+    public void error(String msg) {
+      set.addProblem(this.file, LintProblemSet.ERROR, name + ": " + msg);
+    }
+
+    public void warn(String msg) {
+      set.addProblem(this.file, LintProblemSet.WARNING, name + ": " + msg);
+    }
   }
 
   public void printLintProblem(LintProblemSet problems) {

@@ -436,4 +436,16 @@
     <imas:Division xml:lang="en">Princess</imas:Division>
     <rdf:type rdf:resource="https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#Idol"/>
   </rdf:Description>
+
+	<rdf:Description rdf:about="detail/%E9%AD%94%E6%B3%95%E3%82%92%E3%81%8B%E3%81%91%E3%81%A6%21%20%28M%40STER%20VERSION%29_01">
+		<rdf:type rdf:resource="https://schema.org/MusicRecording"/>
+		<schema:byArtist rdf:resource="https://sparql.crssnky.xyz/imasrdf/RDFs/detail/Amami_Haruka" />
+		<schema:byArtist rdf:resource="https://sparql.crssnky.xyz/imasrdf/RDFs/detail/Akizuki_Ritsuko" />
+		<schema:byArtist rdf:resource="https://sparql.crssnky.xyz/imasrdf/RDFs/detail/Hagiwara_Yukiho" />
+		<schema:duration rdf:datatype="http://www.w3.org/2001/XMLSchema#duration">PT04M10S</schema:duration>
+		<schema:isrcCode rdf:datatype="http://www.w3.org/2001/XMLSchema#string">JPCO00528760</schema:isrcCode>
+		<schema:recordingOf rdf:resource="https://sparql.crssnky.xyz/imasrdf/RDFs/detail/NBGI%28%E7%A5%9E%E5%89%8D%E6%9A%81%29%EF%BC%86NBGI%28%E7%A5%9E%E5%89%8D%E6%9A%81%29" />
+		<schema:datePublished rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2005-09-28</schema:datePublished>
+		<schema:name xml:lang="ja">魔法をかけて! (M@STER VERSION)_01</schema:name>
+	</rdf:Description>
 </rdf:RDF>

@@ -8,12 +8,14 @@ repositories {
 dependencies {
     compile 'org.apache.jena:jena-arq:3.9.0'
     compile 'commons-cli:commons-cli:1.4'
+    compile 'org.yaml:snakeyaml:1.23'
+    compile 'org.codehaus.groovy:groovy:2.5.4'
 
     testCompile 'junit:junit:4.+'
 }
 jar {
     manifest {
-        attributes 'Main-Class' : 'com.github.takemikami.rdflint.RDFLint'
+        attributes 'Main-Class': 'com.github.takemikami.rdflint.RDFLint'
     }
 }
 artifacts {

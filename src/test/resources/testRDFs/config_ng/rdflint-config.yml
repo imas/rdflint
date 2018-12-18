@@ -1,0 +1,13 @@
+baseUri: https://sparql.crssnky.xyz/imasrdf/
+rules:
+- name: ruleA
+  target: '.*.rdf'
+  query: |
+    SELECT ?s ?o
+    WHERE {
+      ?s <http://schema.org/familyName> ?o .
+    }
+  valid: |
+    if(rs.hasNext()) {
+      log.warn("ng " + rs.next())
+    }
