@@ -5,6 +5,7 @@ import groovy.lang.GroovyShell;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.yaml.snakeyaml.Yaml;
@@ -113,24 +115,37 @@ public class RDFLint {
       // collect subjects
       Set<String> subjects = fileTripleSet.values().stream().flatMap(Collection::stream)
           .filter(t -> t.getSubject().isURI())
-          .map(t -> {
-            Node n = t.getSubject();
-            return n.getURI();
-          })
+          .map(t -> t.getSubject().getURI())
           .collect(Collectors.toSet());
 
+      // load resource subjects schema.org
+      {
+        InputStream is = ClassLoader.getSystemResourceAsStream("schemaorg/3.4/all-layers.ttl");
+        Graph g = Factory.createGraphMem();
+        RDFParser.source(is).base("http://schema.org/").lang(Lang.TTL).parse(g);
+        Set<String> sets = g.find().toList().stream()
+            .map(t -> t.getSubject().getURI())
+            .collect(Collectors.toSet());
+        subjects.addAll(sets);
+      }
+
+      String[] prefixes = new String[]{baseUri, "http://schema.org/"};
       fileTripleSet.forEach((f, l) -> {
         // check undefined uri
         l.forEach(t -> {
           for (Node n : new Node[]{t.getPredicate(), t.getObject()}) {
-            if (n.isURI() && n.getURI().startsWith(baseUri) && !subjects.contains(n.getURI())) {
-              rtn.addProblem(
-                  f,
-                  LintProblemSet.WARNING,
-                  "Undefined URI: " + n.getURI()
-                      + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                      + t.getObject() + ")"
-              );
+            if (n.isURI()) {
+              for (String prefix : prefixes) {
+                if (n.getURI().startsWith(prefix) && !subjects.contains(n.getURI())) {
+                  rtn.addProblem(
+                      f,
+                      LintProblemSet.WARNING,
+                      "Undefined URI: " + n.getURI()
+                          + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
+                          + t.getObject() + ")"
+                  );
+                }
+              }
             }
           }
         });
@@ -180,6 +195,7 @@ public class RDFLint {
     public void warn(String msg) {
       set.addProblem(this.file, LintProblemSet.WARNING, name + ": " + msg);
     }
+
   }
 
   public void printLintProblem(LintProblemSet problems) {
