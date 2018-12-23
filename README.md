@@ -10,8 +10,8 @@ RDF linter
 Download from jitpack and run.
 
 ```
-$ wget https://jitpack.io/com/github/imas/rdflint/0.0.2/rdflint-0.0.2-all.jar
-$ java -jar rdflint-0.0.2-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
+$ wget https://jitpack.io/com/github/imas/rdflint/0.0.3/rdflint-0.0.3-all.jar
+$ java -jar rdflint-0.0.3-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
 # Build and execute
