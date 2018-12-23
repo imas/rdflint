@@ -63,6 +63,22 @@ public class RDFLintTest {
   }
 
   @Test
+  public void undefinedsubjectSchemaOrg() throws Exception {
+    RDFLintParameters params = new RDFLintParameters();
+    params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
+
+    RDFLint lint = new RDFLint();
+    LintProblemSet problems = lint
+        .lintRDFDataSet(params, getParentPath("undefinedsubject_resource"));
+    lint.printLintProblem(problems);
+
+    assertEquals(1, problems.problemSize());
+    Assert.assertArrayEquals(
+        new String[]{"undefinedsubject_resource.rdf"},
+        problems.getProblemSet().keySet().toArray(new String[]{}));
+  }
+
+  @Test
   public void customRuleOk() throws Exception {
     RDFLint lint = new RDFLint();
     RDFLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
