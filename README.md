@@ -1,8 +1,7 @@
 rdflint
 ---
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/47d0f457ec0845c89bcd12d9b7eb8165)](https://www.codacy.com/app/takemikami/rdflint?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=takemikami/rdflint&amp;utm_campaign=Badge_Grade)
-[![](https://jitpack.io/v/takemikami/rdflint.svg)](https://jitpack.io/#takemikami/rdflint)
+[![](https://jitpack.io/v/imas/rdflint.svg)](https://jitpack.io/#imas/rdflint)
 
 RDF linter
 
@@ -11,7 +10,7 @@ RDF linter
 Download from jitpack and run.
 
 ```
-$ wget https://jitpack.io/com/github/takemikami/rdflint/0.0.1/rdflint-0.0.2-all.jar
+$ wget https://jitpack.io/com/github/imas/rdflint/0.0.2/rdflint-0.0.2-all.jar
 $ java -jar rdflint-0.0.2-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
