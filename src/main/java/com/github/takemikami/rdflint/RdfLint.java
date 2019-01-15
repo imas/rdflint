@@ -3,9 +3,10 @@ package com.github.takemikami.rdflint;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -34,8 +35,11 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.yaml.snakeyaml.Yaml;
 
 
-public class RDFLint {
+public class RdfLint {
 
+  /**
+   * rdflint entry point.
+   */
   public static void main(String[] args) throws ParseException, IOException {
 
     // Parse CommandLine Parameter
@@ -56,28 +60,36 @@ public class RDFLint {
     String configPath = cmd.getOptionValue("config");
 
     // Main procedure
-    RDFLint lint = new RDFLint();
-    RDFLintParameters params = lint.loadConfig(configPath);
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint.loadConfig(configPath);
     if (baseUri != null) {
       params.setBaseUri(baseUri);
     }
-    LintProblemSet problems = lint.lintRDFDataSet(params, parentPath);
+    LintProblemSet problems = lint.lintRdfDataSet(params, parentPath);
     lint.printLintProblem(problems);
     if (problems.hasProblem()) {
       System.exit(1);
     }
   }
 
-  public RDFLintParameters loadConfig(String configPath) throws IOException {
+  /**
+   * load configuration file.
+   */
+  public RdfLintParameters loadConfig(String configPath) throws IOException {
     if (configPath == null) {
-      return new RDFLintParameters();
+      return new RdfLintParameters();
     }
     Yaml yaml = new Yaml();
-    return yaml
-        .loadAs(new FileReader(new File(configPath).getCanonicalPath()), RDFLintParameters.class);
+    return yaml.loadAs(
+        new InputStreamReader(
+            new FileInputStream(new File(configPath).getCanonicalPath()), "UTF-8"),
+        RdfLintParameters.class);
   }
 
-  public LintProblemSet lintRDFDataSet(RDFLintParameters params, String targetDir)
+  /**
+   * rdflint main process.
+   */
+  public LintProblemSet lintRdfDataSet(RdfLintParameters params, String targetDir)
       throws IOException {
     LintProblemSet rtn = new LintProblemSet();
     String parentPath = new File(targetDir).getCanonicalPath();
@@ -175,29 +187,9 @@ public class RDFLint {
     return rtn;
   }
 
-  // Problem Logger for groovy
-  public class ProblemLogger {
-
-    LintProblemSet set;
-    String file;
-    String name;
-
-    public ProblemLogger(LintProblemSet set, String file, String name) {
-      this.set = set;
-      this.file = file;
-      this.name = name;
-    }
-
-    public void error(String msg) {
-      set.addProblem(this.file, LintProblemSet.ERROR, name + ": " + msg);
-    }
-
-    public void warn(String msg) {
-      set.addProblem(this.file, LintProblemSet.WARNING, name + ": " + msg);
-    }
-
-  }
-
+  /**
+   * print formatted problems.
+   */
   public void printLintProblem(LintProblemSet problems) {
     problems.getProblemSet().forEach((f, l) -> {
       System.out.println(f);

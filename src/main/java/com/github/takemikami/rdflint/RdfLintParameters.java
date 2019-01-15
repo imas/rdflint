@@ -2,7 +2,7 @@ package com.github.takemikami.rdflint;
 
 import java.util.List;
 
-public class RDFLintParameters {
+public class RdfLintParameters {
 
   private String baseUri;
   private List<CustomRule> rules;
