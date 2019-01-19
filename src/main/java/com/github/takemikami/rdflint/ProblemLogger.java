@@ -3,14 +3,14 @@ package com.github.takemikami.rdflint;
 // Problem Logger for groovy
 public class ProblemLogger {
 
-  LintProblemSet set;
-  String file;
-  String name;
+  private LintProblemSet set;
+  private String file;
+  private String name;
 
   /**
    * problem logger constructor.
    */
-  public ProblemLogger(LintProblemSet set, String file, String name) {
+  ProblemLogger(LintProblemSet set, String file, String name) {
     this.set = set;
     this.file = file;
     this.name = name;

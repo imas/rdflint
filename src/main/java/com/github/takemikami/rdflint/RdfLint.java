@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -75,21 +76,21 @@ public class RdfLint {
   /**
    * load configuration file.
    */
-  public RdfLintParameters loadConfig(String configPath) throws IOException {
+  RdfLintParameters loadConfig(String configPath) throws IOException {
     if (configPath == null) {
       return new RdfLintParameters();
     }
     Yaml yaml = new Yaml();
     return yaml.loadAs(
         new InputStreamReader(
-            new FileInputStream(new File(configPath).getCanonicalPath()), "UTF-8"),
+            new FileInputStream(new File(configPath).getCanonicalPath()), StandardCharsets.UTF_8),
         RdfLintParameters.class);
   }
 
   /**
    * rdflint main process.
    */
-  public LintProblemSet lintRdfDataSet(RdfLintParameters params, String targetDir)
+  LintProblemSet lintRdfDataSet(RdfLintParameters params, String targetDir)
       throws IOException {
     LintProblemSet rtn = new LintProblemSet();
     String parentPath = new File(targetDir).getCanonicalPath();
@@ -104,7 +105,7 @@ public class RdfLint {
             e -> {
               Graph g = Factory.createGraphMem();
               String filename = e.toString().substring(parentPath.length() + 1);
-              String subdir = filename.substring(0, filename.lastIndexOf("/") + 1);
+              String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
               try {
                 RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
               } catch (org.apache.jena.riot.RiotException ex) {
@@ -190,12 +191,14 @@ public class RdfLint {
   /**
    * print formatted problems.
    */
-  public void printLintProblem(LintProblemSet problems) {
+  @SuppressWarnings("PMD")
+  void printLintProblem(LintProblemSet problems) {
     problems.getProblemSet().forEach((f, l) -> {
       System.out.println(f);
-      l.forEach(m -> {
-        System.out.println("  " + (m.getLevel() == 1 ? "error" : "warn ") + "  " + m.getMessage());
-      });
+      l.forEach(m ->
+          System.out
+              .println("  " + (m.getLevel() == 1 ? "error" : "warn ") + "  " + m.getMessage())
+      );
       System.out.println();
     });
   }

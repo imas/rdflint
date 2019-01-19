@@ -5,7 +5,7 @@ public class LintProblem {
   private int level;
   private String message;
 
-  public LintProblem(int level, String message) {
+  LintProblem(int level, String message) {
     this.level = level;
     this.message = message;
   }
