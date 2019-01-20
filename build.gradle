@@ -37,6 +37,7 @@ checkstyle {
 }
 pmd {
     toolVersion '6.10.0'
+    sourceSets = [sourceSets.main]
     ruleSets = [
             "category/java/bestpractices.xml",
             "category/java/multithreading.xml",
