@@ -1,7 +1,16 @@
+import com.github.spotbugs.SpotBugsTask
+
 plugins {
     id 'java'
+    id 'checkstyle'
+    id 'pmd'
+    id 'jacoco'
     id 'com.github.johnrengelman.shadow' version '4.0.3'
+    id "com.github.spotbugs" version "1.6.9"
 }
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 repositories {
     jcenter()
 }
@@ -16,9 +25,35 @@ dependencies {
 }
 jar {
     manifest {
-        attributes 'Main-Class': 'com.github.takemikami.rdflint.RDFLint'
+        attributes 'Main-Class': 'com.github.takemikami.rdflint.RdfLint'
     }
 }
 artifacts {
     archives shadowJar
+}
+
+checkstyle {
+    toolVersion '8.16'
+}
+pmd {
+    toolVersion '6.10.0'
+    sourceSets = [sourceSets.main]
+    ruleSets = [
+            "category/java/bestpractices.xml",
+            "category/java/multithreading.xml",
+            "category/java/performance.xml",
+            "category/java/security.xml"
+    ]
+}
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+tasks.withType(SpotBugsTask) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
 }

@@ -5,7 +5,7 @@ import static junit.framework.TestCase.assertEquals;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class RDFLintTest {
+public class RdfLintTest {
 
   public String getParentPath(String testSet) {
     return this.getClass().getClassLoader().getResource("testRDFs/" + testSet).getPath();
@@ -13,8 +13,8 @@ public class RDFLintTest {
 
   @Test
   public void loadConfig() throws Exception {
-    RDFLint lint = new RDFLint();
-    RDFLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
 
     assertEquals("https://sparql.crssnky.xyz/imasrdf/", params.getBaseUri());
     assertEquals("valid.rdf", params.getRules().get(0).getTarget());
@@ -22,11 +22,11 @@ public class RDFLintTest {
 
   @Test
   public void validxml() throws Exception {
-    RDFLintParameters params = new RDFLintParameters();
+    RdfLintParameters params = new RdfLintParameters();
     params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
 
-    RDFLint lint = new RDFLint();
-    LintProblemSet problems = lint.lintRDFDataSet(params, getParentPath("validxml"));
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("validxml"));
     lint.printLintProblem(problems);
 
     assertEquals(0, problems.problemSize());
@@ -34,11 +34,11 @@ public class RDFLintTest {
 
   @Test
   public void invalidxml() throws Exception {
-    RDFLintParameters params = new RDFLintParameters();
+    RdfLintParameters params = new RdfLintParameters();
     params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
 
-    RDFLint lint = new RDFLint();
-    LintProblemSet problems = lint.lintRDFDataSet(params, getParentPath("invalidxml"));
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("invalidxml"));
     lint.printLintProblem(problems);
 
     assertEquals(1, problems.problemSize());
@@ -49,11 +49,11 @@ public class RDFLintTest {
 
   @Test
   public void undefinedsubject() throws Exception {
-    RDFLintParameters params = new RDFLintParameters();
+    RdfLintParameters params = new RdfLintParameters();
     params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
 
-    RDFLint lint = new RDFLint();
-    LintProblemSet problems = lint.lintRDFDataSet(params, getParentPath("undefinedsubject"));
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("undefinedsubject"));
     lint.printLintProblem(problems);
 
     assertEquals(1, problems.problemSize());
@@ -64,12 +64,12 @@ public class RDFLintTest {
 
   @Test
   public void undefinedsubjectSchemaOrg() throws Exception {
-    RDFLintParameters params = new RDFLintParameters();
+    RdfLintParameters params = new RdfLintParameters();
     params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
 
-    RDFLint lint = new RDFLint();
+    RdfLint lint = new RdfLint();
     LintProblemSet problems = lint
-        .lintRDFDataSet(params, getParentPath("undefinedsubject_resource"));
+        .lintRdfDataSet(params, getParentPath("undefinedsubject_resource"));
     lint.printLintProblem(problems);
 
     assertEquals(1, problems.problemSize());
@@ -80,9 +80,9 @@ public class RDFLintTest {
 
   @Test
   public void customRuleOk() throws Exception {
-    RDFLint lint = new RDFLint();
-    RDFLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
-    LintProblemSet problems = lint.lintRDFDataSet(params, getParentPath("config_ok"));
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("config_ok"));
     lint.printLintProblem(problems);
 
     assertEquals(0, problems.problemSize());
@@ -90,9 +90,9 @@ public class RDFLintTest {
 
   @Test
   public void customRuleNg() throws Exception {
-    RDFLint lint = new RDFLint();
-    RDFLintParameters params = lint.loadConfig(getParentPath("config_ng/rdflint-config.yml"));
-    LintProblemSet problems = lint.lintRDFDataSet(params, getParentPath("config_ng"));
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint.loadConfig(getParentPath("config_ng/rdflint-config.yml"));
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("config_ng"));
     lint.printLintProblem(problems);
 
     assertEquals(1, problems.problemSize());
