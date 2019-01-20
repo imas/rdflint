@@ -1,9 +1,9 @@
 package com.github.takemikami.rdflint;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 class LintProblemSet {
@@ -11,7 +11,7 @@ class LintProblemSet {
   static final int ERROR = 1;
   static final int WARNING = 2;
 
-  private Map<String, List<LintProblem>> problemSet = new HashMap<>();
+  private Map<String, List<LintProblem>> problemSet = new ConcurrentHashMap<>();
 
   void addProblem(String fileName, int level, String message) {
     problemSet.putIfAbsent(fileName, new LinkedList<>());

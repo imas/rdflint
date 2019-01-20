@@ -3,11 +3,10 @@ package com.github.takemikami.rdflint;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -83,7 +82,8 @@ public class RdfLint {
     Yaml yaml = new Yaml();
     return yaml.loadAs(
         new InputStreamReader(
-            new FileInputStream(new File(configPath).getCanonicalPath()), StandardCharsets.UTF_8),
+            Files.newInputStream(Paths.get(new File(configPath).getCanonicalPath())),
+            Charset.forName("UTF-8")),
         RdfLintParameters.class);
   }
 

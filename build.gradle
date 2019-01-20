@@ -35,6 +35,15 @@ artifacts {
 checkstyle {
     toolVersion '8.16'
 }
+pmd {
+    toolVersion '6.10.0'
+    ruleSets = [
+            "category/java/bestpractices.xml",
+            "category/java/multithreading.xml",
+            "category/java/performance.xml",
+            "category/java/security.xml"
+    ]
+}
 tasks.withType(Checkstyle) {
     reports {
         xml.enabled = false
