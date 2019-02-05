@@ -1,4 +1,4 @@
-package com.github.takemikami.rdflint;
+package com.github.imas.rdflint;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;

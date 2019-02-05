@@ -1,4 +1,4 @@
-package com.github.takemikami.rdflint;
+package com.github.imas.rdflint;
 
 // Problem Logger for groovy
 public class ProblemLogger {
