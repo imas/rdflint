@@ -1,4 +1,4 @@
-package com.github.takemikami.rdflint;
+package com.github.imas.rdflint;
 
 public class CustomRule {
 
