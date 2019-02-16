@@ -99,6 +99,32 @@ rules:
 And run SPARQL query of ``rules-query`` to target file of ``rules-target``. Groovy script of ``rules-valid`` apply to result set of query.
 
 
+## Interactive Mode
+
+Run interactive mode with ``-i`` parameter.
+
+```
+$ java -jar rdflint-0.0.3-all.jar -i -targetdir example/dataset -config example/dataset/rdflint-config.yml
+```
+
+And try to query. Double return to perform query, type ``exit;`` to exit interactive mode.
+
+```
+sparql > PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+> SELECT ?s
+> WHERE {
+>   ?s rdf:type <https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#Idol> .
+> }
+>
+---------------------------------------------------------------------
+| s                                                                 |
+=====================================================================
+| <https://sparql.crssnky.xyz/imasrdf/RDFs/detail/Hagiwara_Yukiho>  |
+| <https://sparql.crssnky.xyz/imasrdf/RDFs/detail/Miura_Azusa>      |
+| <https://sparql.crssnky.xyz/imasrdf/RDFs/detail/Takatsuki_Yayoi>  |
+........
+```
+
 ## Contributing
 
 Please fork this repository, and create pull request for contributing.

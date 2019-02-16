@@ -27,11 +27,18 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.Parser;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -47,6 +54,7 @@ public class RdfLint {
     options.addOption("baseuri", true, "RDF base URI");
     options.addOption("targetdir", true, "Target Directory Path");
     options.addOption("config", true, "Configuration file Path");
+    options.addOption("i", false, "Interactive Mode");
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
@@ -65,10 +73,17 @@ public class RdfLint {
     if (baseUri != null) {
       params.setBaseUri(baseUri);
     }
-    LintProblemSet problems = lint.lintRdfDataSet(params, parentPath);
-    lint.printLintProblem(problems);
-    if (problems.hasProblem()) {
-      System.exit(1);
+
+    if (cmd.hasOption("i")) {
+      // Execute Interactive mode
+      lint.interactiveMode(params, parentPath);
+    } else {
+      // Execute linter
+      LintProblemSet problems = lint.lintRdfDataSet(params, parentPath);
+      lint.printLintProblem(problems);
+      if (problems.hasProblem()) {
+        System.exit(1);
+      }
     }
   }
 
@@ -201,6 +216,68 @@ public class RdfLint {
       );
       System.out.println();
     });
+  }
+
+  /**
+   * execute interacitve mode.
+   */
+  void interactiveMode(RdfLintParameters params, String targetDir) throws IOException {
+    // load rdf
+    String parentPath = new File(targetDir).getCanonicalPath();
+    String baseUri = params.getBaseUri();
+
+    Map<String, List<Triple>> fileTripleSet = Files
+        .walk(Paths.get(parentPath))
+        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
+        .collect(Collectors.toMap(
+            e -> e.toString().substring(parentPath.length() + 1),
+            e -> {
+              Graph g = Factory.createGraphMem();
+              String filename = e.toString().substring(parentPath.length() + 1);
+              String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+              RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
+              List<Triple> lst = g.find().toList();
+              g.close();
+              return lst;
+            }
+        ));
+
+    Graph g = Factory.createGraphMem();
+    fileTripleSet.forEach((f, l) -> {
+      // check undefined uri
+      l.forEach(g::add);
+    });
+    Model m = ModelFactory.createModelForGraph(g);
+
+    // initialize jline
+    Terminal terminal = TerminalBuilder.builder()
+        .system(true)
+        .build();
+    Parser p = new InteractiveParser();
+    LineReader lineReader = LineReaderBuilder.builder()
+        .terminal(terminal)
+        .parser(p)
+        .build();
+
+    while (true) {
+      String line = lineReader.readLine("sparql > ");
+
+      String[] exitCommands = {"exit()", "quit()", "exit;", "quit;"};
+      for (String cmd : exitCommands) {
+        if (line.contains(cmd)) {
+          return;
+        }
+      }
+
+      try {
+        Query query = QueryFactory.create(line);
+        QueryExecution qe = QueryExecutionFactory.create(query, m);
+        ResultSet results = qe.execSelect();
+        ResultSetFormatter.out(System.out, results, query);
+      } catch (Exception ex) {
+        ex.printStackTrace(); // NOPMD
+      }
+    }
   }
 
 }
