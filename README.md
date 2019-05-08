@@ -107,7 +107,7 @@ Run interactive mode with ``-i`` parameter.
 $ java -jar rdflint-0.0.4-all.jar -i -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
-And try to query. Double return to perform query, type ``exit;`` to exit interactive mode.
+And try to query. Double return to perform query, type ``:exit`` to exit interactive mode.
 
 ```
 sparql > PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
