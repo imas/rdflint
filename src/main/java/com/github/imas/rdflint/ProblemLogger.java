@@ -17,11 +17,15 @@ public class ProblemLogger {
   }
 
   public void error(String msg) {
-    set.addProblem(this.file, LintProblemSet.ERROR, name + ": " + msg);
+    set.addProblem(this.file, LintProblem.ErrorLevel.ERROR, name + ": " + msg);
   }
 
   public void warn(String msg) {
-    set.addProblem(this.file, LintProblemSet.WARNING, name + ": " + msg);
+    set.addProblem(this.file, LintProblem.ErrorLevel.WARN, name + ": " + msg);
+  }
+
+  public void info(String msg) {
+    set.addProblem(this.file, LintProblem.ErrorLevel.INFO, name + ": " + msg);
   }
 
 }
