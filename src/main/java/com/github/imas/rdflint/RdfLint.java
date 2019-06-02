@@ -293,6 +293,68 @@ public class RdfLint {
   void interactiveMode(RdfLintParameters params, String targetDir) throws IOException {
     // load rdf
     String parentPath = new File(targetDir).getCanonicalPath();
+    Model m = this.loadRdfSet(params, targetDir);
+
+    // initialize jline
+    Terminal terminal = TerminalBuilder.builder()
+        .system(true)
+        .build();
+    Parser p = new InteractiveParser();
+    LineReader lineReader = LineReaderBuilder.builder()
+        .terminal(terminal)
+        .parser(p)
+        .build();
+
+    while (true) {
+      String line = lineReader.readLine("SPARQL> ");
+
+      if (line.trim().charAt(0) == ':') {
+        // execute command
+        String cmd = line.trim().substring(1);
+        switch (cmd) {
+          case "exit":
+          case "quit":
+            return;
+
+          case "check":
+          case "lint":
+            LintProblemSet problems = this.lintRdfDataSet(params, parentPath);
+            this.printLintProblem(problems);
+            break;
+
+          case "reload":
+            m = this.loadRdfSet(params, targetDir);
+            break;
+
+          case "help":
+            System.out.println(":exit -- exit interactive mode."); // NOPMD
+            System.out.println(":check -- execute validation of rdflint."); // NOPMD
+            System.out.println(":reload -- reload rdf dataset."); // NOPMD
+            break;
+
+          default:
+            System.out.println("unknown command."); // NOPMD
+            break;
+        }
+
+      } else {
+        // execute query
+        try {
+          Query query = QueryFactory.create(line);
+          QueryExecution qe = QueryExecutionFactory.create(query, m);
+          ResultSet results = qe.execSelect();
+          ResultSetFormatter.out(System.out, results, query);
+        } catch (Exception ex) {
+          ex.printStackTrace(); // NOPMD
+        }
+      }
+
+    }
+  }
+
+  // create model from files (rdf, ttl)
+  private Model loadRdfSet(RdfLintParameters params, String targetDir) throws IOException {
+    String parentPath = new File(targetDir).getCanonicalPath();
     String baseUri = params.getBaseUri();
 
     Map<String, List<Triple>> fileTripleSet = Files
@@ -313,40 +375,9 @@ public class RdfLint {
 
     Graph g = Factory.createGraphMem();
     fileTripleSet.forEach((f, l) -> {
-      // check undefined uri
       l.forEach(g::add);
     });
-    Model m = ModelFactory.createModelForGraph(g);
-
-    // initialize jline
-    Terminal terminal = TerminalBuilder.builder()
-        .system(true)
-        .build();
-    Parser p = new InteractiveParser();
-    LineReader lineReader = LineReaderBuilder.builder()
-        .terminal(terminal)
-        .parser(p)
-        .build();
-
-    while (true) {
-      String line = lineReader.readLine("sparql > ");
-
-      String[] exitCommands = {"exit()", "quit()", "exit;", "quit;"};
-      for (String cmd : exitCommands) {
-        if (line.contains(cmd)) {
-          return;
-        }
-      }
-
-      try {
-        Query query = QueryFactory.create(line);
-        QueryExecution qe = QueryExecutionFactory.create(query, m);
-        ResultSet results = qe.execSelect();
-        ResultSetFormatter.out(System.out, results, query);
-      } catch (Exception ex) {
-        ex.printStackTrace(); // NOPMD
-      }
-    }
+    return ModelFactory.createModelForGraph(g);
   }
 
 }
