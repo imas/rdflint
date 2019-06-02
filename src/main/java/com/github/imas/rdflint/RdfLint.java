@@ -53,6 +53,7 @@ public class RdfLint {
     Options options = new Options();
     options.addOption("baseuri", true, "RDF base URI");
     options.addOption("targetdir", true, "Target Directory Path");
+    options.addOption("origindir", true, "Origin Dataset Directory Path");
     options.addOption("config", true, "Configuration file Path");
     options.addOption("i", false, "Interactive Mode");
 
@@ -65,13 +66,18 @@ public class RdfLint {
     if (parentPath == null) {
       parentPath = ".";
     }
+    String originPath = cmd.getOptionValue("origindir");
     String configPath = cmd.getOptionValue("config");
 
     // Main procedure
     RdfLint lint = new RdfLint();
     RdfLintParameters params = lint.loadConfig(configPath);
+    params.setTargetDir(parentPath);
     if (baseUri != null) {
       params.setBaseUri(baseUri);
+    }
+    if (originPath != null) {
+      params.setOriginDir(originPath);
     }
 
     if (cmd.hasOption("i")) {
@@ -81,7 +87,7 @@ public class RdfLint {
       // Execute linter
       LintProblemSet problems = lint.lintRdfDataSet(params, parentPath);
       lint.printLintProblem(problems);
-      if (problems.hasProblem()) {
+      if (problems.hasError()) {
         System.exit(1);
       }
     }
@@ -126,7 +132,7 @@ public class RdfLint {
               } catch (org.apache.jena.riot.RiotException ex) {
                 rtn.addProblem(
                     filename,
-                    LintProblemSet.ERROR,
+                    LintProblem.ErrorLevel.ERROR,
                     ex.getMessage());
               }
               List<Triple> lst = g.find().toList();
@@ -167,7 +173,7 @@ public class RdfLint {
                 if (n.getURI().startsWith(prefix) && !subjects.contains(n.getURI())) {
                   rtn.addProblem(
                       f,
-                      LintProblemSet.WARNING,
+                      LintProblem.ErrorLevel.WARN,
                       "Undefined URI: " + n.getURI()
                           + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
                           + t.getObject() + ")"
@@ -200,6 +206,69 @@ public class RdfLint {
       });
     }
 
+    // degrade validation
+    if (params.getOriginDir() != null) {
+      String originPath = new File(params.getOriginDir()).getCanonicalPath();
+
+      Map<String, List<Triple>> originFileTripleSet = Files
+          .walk(Paths.get(originPath))
+          .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
+          .collect(Collectors.toMap(
+              e -> e.toString().substring(originPath.length() + 1),
+              e -> {
+                Graph g = Factory.createGraphMem();
+                String filename = e.toString().substring(originPath.length() + 1);
+                String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+                RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
+                List<Triple> lst = g.find().toList();
+                g.close();
+                return lst;
+              }
+          ));
+
+      originFileTripleSet.forEach((f, l) -> {
+
+        // prepare new subject set
+        Set newSubjectSet = fileTripleSet.get(f).stream()
+            .map(t -> {
+              if (t.getSubject().isURI()) {
+                return t.getSubject().getURI();
+              }
+              return null;
+            }).collect(Collectors.toSet());
+        // prepare old subject set
+        Set oldSubjectSet = l.stream()
+            .map(t -> {
+              if (t.getSubject().isURI()) {
+                return t.getSubject().getURI();
+              }
+              return null;
+            }).collect(Collectors.toSet());
+        // alert removed subjects
+        oldSubjectSet.forEach(s -> {
+          if (!newSubjectSet.contains(s)) {
+            rtn.addProblem(f, LintProblem.ErrorLevel.INFO,
+                "Removed Subject: " + s);
+          }
+        });
+
+        // alert removed triple
+        l.forEach(t -> {
+          for (Node n : new Node[]{t.getPredicate(), t.getObject()}) {
+            if (n.isURI()) {
+              if (!fileTripleSet.get(f).contains(t)
+                  && newSubjectSet.contains(t.getSubject().toString())) {
+                rtn.addProblem(f, LintProblem.ErrorLevel.INFO,
+                    "Removed Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
+                        + t.getObject());
+              }
+            }
+          }
+        });
+
+      });
+    }
+
     return rtn;
   }
 
@@ -212,7 +281,7 @@ public class RdfLint {
       System.out.println(f);
       l.forEach(m ->
           System.out
-              .println("  " + (m.getLevel() == 1 ? "error" : "warn ") + "  " + m.getMessage())
+              .println("  " + m.getLevel() + "  " + m.getMessage())
       );
       System.out.println();
     });

@@ -2,15 +2,19 @@ package com.github.imas.rdflint;
 
 public class LintProblem {
 
-  private int level;
+  enum ErrorLevel {
+    ERROR, WARN, INFO
+  }
+
+  private ErrorLevel level;
   private String message;
 
-  LintProblem(int level, String message) {
+  LintProblem(ErrorLevel level, String message) {
     this.level = level;
     this.message = message;
   }
 
-  public int getLevel() {
+  public ErrorLevel getLevel() {
     return level;
   }
 

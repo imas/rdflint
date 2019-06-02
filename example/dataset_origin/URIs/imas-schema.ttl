@@ -134,11 +134,11 @@ imas:BloodType          a   rdf:Property ;
     rdfs:comment            "血液型を表すプロパティ" ;
     rdfs:label              "血液型"@ja .
     
-imas:bust               a   rdf:Property ;
+imas:Bust               a   rdf:Property ;
     rdfs:comment            "胸囲を表すプロパティ" ;
     rdfs:label              "胸囲"@ja .
     
-imas:waist              a   rdf:Property ;
+imas:Waist              a   rdf:Property ;
     rdfs:comment            "腹囲を表すプロパティ" ;
     rdfs:label              "腹囲"@ja .
     
@@ -146,7 +146,7 @@ imas:ShoeSize           a   rdf:Property ;
     rdfs:comment            "靴のサイズを表すプロパティ" ;
     rdfs:label              "靴のサイズ"@ja .
     
-imas:hip                a   rdf:Property ;
+imas:Hip                a   rdf:Property ;
     rdfs:comment            "臀囲(尻囲)を表すプロパティ" ;
     rdfs:label              "臀囲"@ja .
     
@@ -174,7 +174,7 @@ imas:cv                 a   rdf:Property ;
     rdfs:comment            "担当声優を表すプロパティ" ;
     rdfs:label              "担当声優"@ja .
     
-imas:constellation      a   rdf:Property ;
+imas:Constellation      a   rdf:Property ;
     rdfs:comment            "星座を表すプロパティ" ;
     rdfs:label              "星座"@ja .
     
