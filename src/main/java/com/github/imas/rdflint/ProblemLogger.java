@@ -10,7 +10,7 @@ public class ProblemLogger {
   /**
    * problem logger constructor.
    */
-  ProblemLogger(LintProblemSet set, String file, String name) {
+  public ProblemLogger(LintProblemSet set, String file, String name) {
     this.set = set;
     this.file = file;
     this.name = name;

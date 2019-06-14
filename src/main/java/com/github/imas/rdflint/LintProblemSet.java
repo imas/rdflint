@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-class LintProblemSet {
+public class LintProblemSet {
 
   private Map<String, List<LintProblem>> problemSet = new ConcurrentHashMap<>();
 
-  void addProblem(String fileName, LintProblem.ErrorLevel level, String message) {
+  public void addProblem(String fileName, LintProblem.ErrorLevel level, String message) {
     problemSet.putIfAbsent(fileName, new LinkedList<>());
     problemSet.get(fileName).add(new LintProblem(level, message));
   }

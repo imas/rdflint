@@ -2,7 +2,7 @@ package com.github.imas.rdflint;
 
 public class LintProblem {
 
-  enum ErrorLevel {
+  public enum ErrorLevel {
     ERROR, WARN, INFO
   }
 

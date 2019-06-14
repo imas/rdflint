@@ -1,4 +1,4 @@
-package com.github.imas.rdflint;
+package com.github.imas.rdflint.config;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class RdfLintParameters {
   public void setOriginDir(String originDir) {
     this.originDir = originDir;
   }
-  
+
   public String getBaseUri() {
     return baseUri;
   }
