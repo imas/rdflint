@@ -2,7 +2,6 @@ import com.github.spotbugs.SpotBugsTask
 
 plugins {
     id 'java'
-    id 'application'
     id 'checkstyle'
     id 'pmd'
     id 'jacoco'
@@ -33,10 +32,6 @@ jar {
 }
 artifacts {
     archives shadowJar
-}
-mainClassName = 'com.github.imas.rdflint.RdfLint'
-run {
-    args '-targetdir example/dataset -config example/dataset/rdflint-config.yml'.split('\\s+')
 }
 
 checkstyle {
