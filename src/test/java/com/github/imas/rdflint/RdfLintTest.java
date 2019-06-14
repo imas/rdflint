@@ -2,6 +2,7 @@ package com.github.imas.rdflint;
 
 import static junit.framework.TestCase.assertEquals;
 
+import com.github.imas.rdflint.config.RdfLintParameters;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -93,6 +94,32 @@ public class RdfLintTest {
     RdfLint lint = new RdfLint();
     RdfLintParameters params = lint.loadConfig(getParentPath("config_ng/rdflint-config.yml"));
     LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("config_ng"));
+    lint.printLintProblem(problems);
+
+    assertEquals(1, problems.problemSize());
+  }
+
+  @Test
+  public void degradeCheckOk() throws Exception {
+    RdfLintParameters params = new RdfLintParameters();
+    params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
+    params.setOriginDir(getParentPath("validxml"));
+
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("originxml"));
+    lint.printLintProblem(problems);
+
+    assertEquals(0, problems.problemSize());
+  }
+
+  @Test
+  public void degradeCheckNg() throws Exception {
+    RdfLintParameters params = new RdfLintParameters();
+    params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
+    params.setOriginDir(getParentPath("originxml"));
+
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("validxml"));
     lint.printLintProblem(problems);
 
     assertEquals(1, problems.problemSize());

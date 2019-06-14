@@ -1,18 +1,21 @@
 package com.github.imas.rdflint;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
+import com.github.imas.rdflint.config.RdfLintParameters;
+import com.github.imas.rdflint.validator.RdfValidator;
+import com.github.imas.rdflint.validator.impl.CustomQueryValidator;
+import com.github.imas.rdflint.validator.impl.DegradeValidator;
+import com.github.imas.rdflint.validator.impl.RdfSyntaxValidator;
+import com.github.imas.rdflint.validator.impl.UndefinedSubjectValidator;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -21,7 +24,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -31,9 +33,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
-import org.codehaus.groovy.control.CompilerConfiguration;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
@@ -114,11 +114,49 @@ public class RdfLint {
   LintProblemSet lintRdfDataSet(RdfLintParameters params, String targetDir)
       throws IOException {
     LintProblemSet rtn = new LintProblemSet();
+
+    // initialize validators
+    List<RdfValidator> validators = Arrays.asList(
+        new RdfSyntaxValidator(),
+        new UndefinedSubjectValidator(),
+        new CustomQueryValidator(),
+        new DegradeValidator()
+    );
+    validators.forEach(v ->
+        v.setParameters(params)
+    );
+
+    // validation: validateFile
     String parentPath = new File(targetDir).getCanonicalPath();
-    String baseUri = params.getBaseUri();
+    Files.walk(Paths.get(parentPath))
+        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
+        .forEach(f -> validators.forEach(v -> v.validateFile(rtn, f.toString(), parentPath)));
+    if (rtn.hasProblem()) {
+      return rtn;
+    }
 
     // parse rdf & ttl
-    Map<String, List<Triple>> fileTripleSet = Files
+    String baseUri = params.getBaseUri();
+    Map<String, List<Triple>> fileTripleSet = loadFileTripleSet(parentPath, baseUri);
+    String originPath = params.getOriginDir() != null
+        ? new File(params.getOriginDir()).getCanonicalPath() : null;
+    Map<String, List<Triple>> originFileTripleSet = originPath != null
+        ? loadFileTripleSet(originPath, baseUri) : new ConcurrentHashMap<>();
+
+    // validation: validateTripleSet
+    validators.forEach(v -> {
+      v.prepareValidationResource(fileTripleSet);
+      fileTripleSet.forEach((f, l) -> v.validateTripleSet(rtn, f, l));
+      originFileTripleSet.forEach((f, l) -> v.validateOriginTripleSet(rtn, f, l));
+      v.close();
+    });
+
+    return rtn;
+  }
+
+  private Map<String, List<Triple>> loadFileTripleSet(String parentPath, String baseUri)
+      throws IOException {
+    return Files
         .walk(Paths.get(parentPath))
         .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
         .collect(Collectors.toMap(
@@ -127,150 +165,14 @@ public class RdfLint {
               Graph g = Factory.createGraphMem();
               String filename = e.toString().substring(parentPath.length() + 1);
               String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
-              try {
-                RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
-              } catch (org.apache.jena.riot.RiotException ex) {
-                rtn.addProblem(
-                    filename,
-                    LintProblem.ErrorLevel.ERROR,
-                    ex.getMessage());
-              }
+              RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
               List<Triple> lst = g.find().toList();
               g.close();
               return lst;
             }
         ));
-
-    if (rtn.hasProblem()) {
-      return rtn;
-    }
-
-    if (baseUri != null) {
-      // collect subjects
-      Set<String> subjects = fileTripleSet.values().stream().flatMap(Collection::stream)
-          .filter(t -> t.getSubject().isURI())
-          .map(t -> t.getSubject().getURI())
-          .collect(Collectors.toSet());
-
-      // load resource subjects schema.org
-      {
-        InputStream is = ClassLoader.getSystemResourceAsStream("schemaorg/3.4/all-layers.ttl");
-        Graph g = Factory.createGraphMem();
-        RDFParser.source(is).base("http://schema.org/").lang(Lang.TTL).parse(g);
-        Set<String> sets = g.find().toList().stream()
-            .map(t -> t.getSubject().getURI())
-            .collect(Collectors.toSet());
-        subjects.addAll(sets);
-      }
-
-      String[] prefixes = new String[]{baseUri, "http://schema.org/"};
-      fileTripleSet.forEach((f, l) -> {
-        // check undefined uri
-        l.forEach(t -> {
-          for (Node n : new Node[]{t.getPredicate(), t.getObject()}) {
-            if (n.isURI()) {
-              for (String prefix : prefixes) {
-                if (n.getURI().startsWith(prefix) && !subjects.contains(n.getURI())) {
-                  rtn.addProblem(
-                      f,
-                      LintProblem.ErrorLevel.WARN,
-                      "Undefined URI: " + n.getURI()
-                          + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                          + t.getObject() + ")"
-                  );
-                }
-              }
-            }
-          }
-        });
-
-        // execute sparql & custom validation
-        if (params.getRules() != null) {
-          Graph g = Factory.createGraphMem();
-          l.forEach(g::add);
-          Model m = ModelFactory.createModelForGraph(g);
-
-          params.getRules().stream()
-              .filter(r -> f.matches(r.getTarget()))
-              .forEach(r -> {
-                Query query = QueryFactory.create(r.getQuery());
-                QueryExecution qe = QueryExecutionFactory.create(query, m);
-
-                Binding binding = new Binding();
-                binding.setVariable("rs", qe.execSelect());
-                binding.setVariable("log", new ProblemLogger(rtn, f, r.getName()));
-                GroovyShell shell = new GroovyShell(binding, new CompilerConfiguration());
-                shell.evaluate(r.getValid());
-              });
-        }
-      });
-    }
-
-    // degrade validation
-    if (params.getOriginDir() != null) {
-      String originPath = new File(params.getOriginDir()).getCanonicalPath();
-
-      Map<String, List<Triple>> originFileTripleSet = Files
-          .walk(Paths.get(originPath))
-          .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
-          .collect(Collectors.toMap(
-              e -> e.toString().substring(originPath.length() + 1),
-              e -> {
-                Graph g = Factory.createGraphMem();
-                String filename = e.toString().substring(originPath.length() + 1);
-                String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
-                RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
-                List<Triple> lst = g.find().toList();
-                g.close();
-                return lst;
-              }
-          ));
-
-      originFileTripleSet.forEach((f, l) -> {
-
-        // prepare new subject set
-        Set newSubjectSet = fileTripleSet.get(f).stream()
-            .map(t -> {
-              if (t.getSubject().isURI()) {
-                return t.getSubject().getURI();
-              }
-              return null;
-            }).collect(Collectors.toSet());
-        // prepare old subject set
-        Set oldSubjectSet = l.stream()
-            .map(t -> {
-              if (t.getSubject().isURI()) {
-                return t.getSubject().getURI();
-              }
-              return null;
-            }).collect(Collectors.toSet());
-        // alert removed subjects
-        oldSubjectSet.forEach(s -> {
-          if (!newSubjectSet.contains(s)) {
-            rtn.addProblem(f, LintProblem.ErrorLevel.INFO,
-                "Removed Subject: " + s);
-          }
-        });
-
-        // alert removed triple
-        l.forEach(t -> {
-          for (Node n : new Node[]{t.getPredicate(), t.getObject()}) {
-            if (n.isURI()) {
-              if (!fileTripleSet.get(f).contains(t)
-                  && newSubjectSet.contains(t.getSubject().toString())) {
-                rtn.addProblem(f, LintProblem.ErrorLevel.INFO,
-                    "Removed Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                        + t.getObject());
-              }
-            }
-          }
-        });
-
-      });
-    }
-
-    return rtn;
   }
+
 
   /**
    * print formatted problems.
@@ -357,21 +259,7 @@ public class RdfLint {
     String parentPath = new File(targetDir).getCanonicalPath();
     String baseUri = params.getBaseUri();
 
-    Map<String, List<Triple>> fileTripleSet = Files
-        .walk(Paths.get(parentPath))
-        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
-        .collect(Collectors.toMap(
-            e -> e.toString().substring(parentPath.length() + 1),
-            e -> {
-              Graph g = Factory.createGraphMem();
-              String filename = e.toString().substring(parentPath.length() + 1);
-              String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
-              RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
-              List<Triple> lst = g.find().toList();
-              g.close();
-              return lst;
-            }
-        ));
+    Map<String, List<Triple>> fileTripleSet = loadFileTripleSet(parentPath, baseUri);
 
     Graph g = Factory.createGraphMem();
     fileTripleSet.forEach((f, l) -> {
