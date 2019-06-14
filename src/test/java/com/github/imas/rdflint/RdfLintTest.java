@@ -125,4 +125,16 @@ public class RdfLintTest {
     assertEquals(1, problems.problemSize());
   }
 
+  @Test
+  public void generationRuleOk() throws Exception {
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint.loadConfig(getParentPath("config_genok/rdflint-config.yml"));
+
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("config_genok"));
+    lint.printLintProblem(problems);
+
+    assertEquals(1, problems.problemSize());
+  }
+
+
 }

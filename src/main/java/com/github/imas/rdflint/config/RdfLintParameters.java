@@ -8,6 +8,7 @@ public class RdfLintParameters {
   private String originDir;
   private String baseUri;
   private List<CustomRule> rules;
+  private List<GenerationRule> generation;
 
   public String getTargetDir() {
     return targetDir;
@@ -31,6 +32,14 @@ public class RdfLintParameters {
 
   public void setBaseUri(String baseUri) {
     this.baseUri = baseUri;
+  }
+
+  public List<GenerationRule> getGeneration() {
+    return generation;
+  }
+
+  public void setGeneration(List<GenerationRule> generation) {
+    this.generation = generation;
   }
 
   public List<CustomRule> getRules() {
