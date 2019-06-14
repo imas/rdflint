@@ -2,6 +2,7 @@ import com.github.spotbugs.SpotBugsTask
 
 plugins {
     id 'java'
+    id 'application'
     id 'checkstyle'
     id 'pmd'
     id 'jacoco'
@@ -21,6 +22,7 @@ dependencies {
     compile 'org.yaml:snakeyaml:1.23'
     compile 'org.codehaus.groovy:groovy:2.5.4'
     compile 'org.slf4j:slf4j-log4j12:1.7.25'
+    compile 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
 
     testCompile 'junit:junit:4.+'
 }
@@ -31,6 +33,10 @@ jar {
 }
 artifacts {
     archives shadowJar
+}
+mainClassName = 'com.github.imas.rdflint.RdfLint'
+run {
+    args '-targetdir example/dataset -config example/dataset/rdflint-config.yml'.split('\\s+')
 }
 
 checkstyle {

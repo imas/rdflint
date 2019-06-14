@@ -1,0 +1,12 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:schema="http://schema.org/"
+    >
+
+[# th:each="item : ${rs}"]
+  <rdf:Description rdf:about="[(${item.s.substring(params.baseUri.length())})]2">
+    <schema:familyName xml:lang="ja">[(${item.o.substring(0, item.o.length()-3)})]</schema:familyName>
+  </rdf:Description>
+[/]
+
+</rdf:RDF>
