@@ -4,10 +4,92 @@
 [セットアップ](setup.md) |
 [使い方](usage.md) |
 [設定ファイル](config.md) |
-[CI連携](ci.md) |
 [検証ルール](rules.md) |
 [開発者向け](developer.md)
 
 rdflintの設定ファイルの記載方法を説明します。
 
-TODO
+## 設定ファイルの全体階層
+
+- targetDir
+- originDir
+- baseUri
+- rules
+   - リスト
+      - name
+      - query
+      - target
+      - valid
+- generation
+   - リスト
+      - query
+      - input
+      - template
+      - output
+
+設定ファイルの例
+
+```
+baseUri: https://sparql.crssnky.xyz/imasrdf/
+rules:
+- name: file class
+  target: "RDFs/765AS.rdf"
+  query: |
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    SELECT ?s ?o
+    WHERE {
+      ?s rdf:type ?o .
+      FILTER NOT EXISTS {
+        ?s rdf:type <https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#Idol>
+      }
+    }
+  valid: |
+    while(rs.hasNext()) {
+      log.warn("Idol definition file " + rs.next())
+    }
+generation:
+- query: |
+    PREFIX schema: <http://schema.org/>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX imas: <https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#>
+    SELECT  ?m (group_concat(?s;separator=",,,,,")as ?u)
+    WHERE {
+      ?s rdf:type imas:Unit;
+         schema:member ?m.
+    } group by (?m) order by (?m)
+  template: .circleci/Unit_memberOf.rdf.template
+  output: RDFs/Unit_memberOf.rdf
+```
+
+## targetDir: 対象ディレクトリの指定
+
+検証対象のディレクトリのパスを指定します。
+
+## originDir: デグレード検証時の比較対象ディレクトリの指定
+
+デグレード検証時の比較対象のディレクトリのパスを指定します。
+
+## baseUri: 対象リソースURIのベース階層
+
+対象リソースURIのベース階層を指定します。
+
+## rules: カスタムクエリ検証のルール指定
+
+カスタムクエリ検証のルールを指定します。
+
+rule配下に、以下のkey-valueを持つマップのリストを指定します。
+
+- name: ルール名
+- target: 対象とするファイルのパス
+- query: 実行するSPARQLクエリ
+- valid: queryの結果を処理するgroovyスクリプト
+
+## generation: RDFファイル生成の設定
+
+RDFファイル生成のルールを指定します。
+
+generation配下に、以下のkey-valueを持つマップのリストを指定します。
+
+- query: 実行するSPARQLクエリ
+- template: クエリ結果を流し込むthymeleafテンプレートのパス
+- output: 出力ファイルのパス
