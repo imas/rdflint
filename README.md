@@ -23,13 +23,13 @@ Rdflint has following functions.
 Download from jitpack.
 
 ```
-$ wget https://jitpack.io/com/github/imas/rdflint/0.0.6/rdflint-0.0.6-all.jar
+$ wget https://jitpack.io/com/github/imas/rdflint/0.0.7/rdflint-0.0.7-all.jar
 ```
 
 Run for apply to your RDF files.
 
 ```
-$ java -jar rdflint-0.0.6-all.jar -targetdir example/dataset
+$ java -jar rdflint-0.0.7-all.jar -targetdir example/dataset
 ```
 
 ``-targetdir`` parameter is location of target RDF files.
@@ -50,7 +50,7 @@ jobs:
     - run:
         name: run rdflint
         command: |
-          RDFLINT_VERSION=0.0.6
+          RDFLINT_VERSION=0.0.7
           wget https://jitpack.io/com/github/imas/rdflint/$RDFLINT_VERSION/rdflint-$RDFLINT_VERSION-all.jar
           java -jar rdflint-$RDFLINT_VERSION-all.jar
 ```
@@ -60,7 +60,7 @@ jobs:
 When create a configuration file of rdflint, rdflint provide additional checks. Run with ``-config`` parameter like following.
 
 ```
-$ java -jar rdflint-0.0.6-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
+$ java -jar rdflint-0.0.7-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
 ``-config`` parameter is location of rdflint configuration file.
@@ -107,7 +107,7 @@ And run SPARQL query of ``rules-query`` to target file of ``rules-target``. Groo
 Run with ``-origindir`` parameter like following.
 
 ```
-$ java -jar rdflint-0.0.6-all.jar -targetdir example/dataset -origindir example/dataset_origin -config example/dataset/rdflint-config.yml
+$ java -jar rdflint-0.0.7-all.jar -targetdir example/dataset -origindir example/dataset_origin -config example/dataset/rdflint-config.yml
 ```
 
 And check subject and triple, removed from origindir. Its problem report as INFO level.
@@ -171,7 +171,7 @@ xmlns:imas="https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#"
 Run interactive mode with ``-i`` parameter.
 
 ```
-$ java -jar rdflint-0.0.6-all.jar -i -targetdir example/dataset -config example/dataset/rdflint-config.yml
+$ java -jar rdflint-0.0.7-all.jar -i -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
 And try to query. Double return to perform query, type ``:exit`` to exit interactive mode.
