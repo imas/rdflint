@@ -80,6 +80,21 @@ public class RdfLintTest {
   }
 
   @Test
+  public void needtrim() throws Exception {
+    RdfLintParameters params = new RdfLintParameters();
+    params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
+
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("needtrim"));
+    lint.printLintProblem(problems);
+
+    assertEquals(1, problems.problemSize());
+    Assert.assertArrayEquals(
+        new String[]{"needtrim.rdf"},
+        problems.getProblemSet().keySet().toArray(new String[]{}));
+  }
+
+  @Test
   public void customRuleOk() throws Exception {
     RdfLint lint = new RdfLint();
     RdfLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
