@@ -5,6 +5,7 @@ import com.github.imas.rdflint.validator.RdfValidator;
 import com.github.imas.rdflint.validator.impl.CustomQueryValidator;
 import com.github.imas.rdflint.validator.impl.DegradeValidator;
 import com.github.imas.rdflint.validator.impl.RdfSyntaxValidator;
+import com.github.imas.rdflint.validator.impl.TrimValidator;
 import com.github.imas.rdflint.validator.impl.UndefinedSubjectValidator;
 import java.io.File;
 import java.io.IOException;
@@ -130,6 +131,7 @@ public class RdfLint {
         new RdfSyntaxValidator(),
         new UndefinedSubjectValidator(),
         new CustomQueryValidator(),
+        new TrimValidator(),
         new DegradeValidator()
     );
     validators.forEach(v ->

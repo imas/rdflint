@@ -207,7 +207,7 @@ $ gradle shadowJar
 Run rdflint.
 
 ```
-$ java -jar build/libs/rdflint-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
+$ java -jar build/libs/rdflint.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
 ## License
