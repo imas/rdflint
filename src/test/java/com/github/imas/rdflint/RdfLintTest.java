@@ -80,6 +80,33 @@ public class RdfLintTest {
   }
 
   @Test
+  public void datatypeOk() throws Exception {
+    RdfLintParameters params = new RdfLintParameters();
+    params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
+
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("datatype_ok"));
+    lint.printLintProblem(problems);
+
+    assertEquals(0, problems.problemSize());
+  }
+
+  @Test
+  public void datatypeNg() throws Exception {
+    RdfLintParameters params = new RdfLintParameters();
+    params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
+
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("datatype_ng"));
+    lint.printLintProblem(problems);
+
+    assertEquals(1, problems.problemSize());
+    Assert.assertArrayEquals(
+        new String[]{"datatype_ng.rdf"},
+        problems.getProblemSet().keySet().toArray(new String[]{}));
+  }
+
+  @Test
   public void needtrim() throws Exception {
     RdfLintParameters params = new RdfLintParameters();
     params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");

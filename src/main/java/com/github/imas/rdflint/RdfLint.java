@@ -3,6 +3,7 @@ package com.github.imas.rdflint;
 import com.github.imas.rdflint.config.RdfLintParameters;
 import com.github.imas.rdflint.validator.RdfValidator;
 import com.github.imas.rdflint.validator.impl.CustomQueryValidator;
+import com.github.imas.rdflint.validator.impl.DataTypeValidator;
 import com.github.imas.rdflint.validator.impl.DegradeValidator;
 import com.github.imas.rdflint.validator.impl.RdfSyntaxValidator;
 import com.github.imas.rdflint.validator.impl.TrimValidator;
@@ -130,6 +131,7 @@ public class RdfLint {
     List<RdfValidator> validators = Arrays.asList(
         new RdfSyntaxValidator(),
         new UndefinedSubjectValidator(),
+        new DataTypeValidator(),
         new CustomQueryValidator(),
         new TrimValidator(),
         new DegradeValidator()
