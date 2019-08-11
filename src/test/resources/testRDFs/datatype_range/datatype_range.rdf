@@ -1,0 +1,38 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:schema="http://schema.org/"
+    >
+
+  <rdf:Description rdf:about="something01">
+    <schema:issueNumber>1</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something02">
+    <schema:issueNumber>2</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something03">
+    <schema:issueNumber>3</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something04">
+    <schema:issueNumber>4</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something05">
+    <schema:issueNumber>5</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something06">
+    <schema:issueNumber>6</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something07">
+    <schema:issueNumber>7</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something08">
+    <schema:issueNumber>7</schema:issueNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="something09">
+    <schema:issueNumber>7</schema:issueNumber>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="something10">
+    <schema:issueNumber>100</schema:issueNumber>
+  </rdf:Description>
+
+</rdf:RDF>
