@@ -107,6 +107,22 @@ public class RdfLintTest {
   }
 
   @Test
+  public void datatypeRange() throws Exception {
+    RdfLintParameters params = new RdfLintParameters();
+    params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
+
+    RdfLint lint = new RdfLint();
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("datatype_range"));
+    lint.printLintProblem(problems);
+
+    assertEquals(1, problems.problemSize());
+    Assert.assertArrayEquals(
+        new String[]{"datatype_range.rdf"},
+        problems.getProblemSet().keySet().toArray(new String[]{}));
+  }
+
+
+  @Test
   public void needtrim() throws Exception {
     RdfLintParameters params = new RdfLintParameters();
     params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");

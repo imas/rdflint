@@ -2,6 +2,7 @@ package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
 import com.github.imas.rdflint.LintProblemSet;
+import com.github.imas.rdflint.utils.StatsTestUtils;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.util.Collection;
 import java.util.HashMap;
@@ -82,7 +83,6 @@ public class DataTypeValidator extends AbstractRdfValidator {
 
       dataTypeMap.put(p, dataType);
     });
-
   }
 
   private DataType guessDataType(String s) {
@@ -129,9 +129,35 @@ public class DataTypeValidator extends AbstractRdfValidator {
 
   @Override
   public void validateTripleSet(LintProblemSet problems, String file, List<Triple> tripeSet) {
+    // compute outlier
+    HashMap<String, double[]> dataNgValues = new HashMap<>();
+    Set<String> predicates = tripeSet.stream()
+        .map(t -> t.getPredicate().getURI())
+        .collect(Collectors.toSet());
+    predicates.forEach(p -> {
+      dataTypeMap.forEach((pred, dataType) -> {
+        if (checkDataType(dataType, DataType.FLOAT)) {
+          List<Double> valueList = tripeSet.stream()
+              .filter(t -> t.getPredicate().getURI().equals(pred))
+              .filter(t -> checkDataType(guessDataType(t.getObject().getLiteralValue().toString()),
+                  DataType.FLOAT))
+              .map(t -> Double.parseDouble(t.getObject().getLiteralValue().toString()))
+              .collect(Collectors.toList());
+          double[] values = new double[valueList.size()];
+          for (int i = 0; i < valueList.size(); i++) {
+            values[i] = valueList.get(i);
+          }
+
+          double[] range = StatsTestUtils.clusteringOutlierTest(values, 3.0, 10);
+          dataNgValues.put(pred, range);
+        }
+      });
+    });
+
     tripeSet.stream().filter(t -> t.getObject().isLiteral()).forEach(t -> {
+      String value = t.getObject().getLiteralValue().toString();
       DataType guessedType = dataTypeMap.get(t.getPredicate().getURI());
-      DataType dataType = guessDataType(t.getObject().getLiteralValue().toString());
+      DataType dataType = guessDataType(value);
       if (!checkDataType(dataType, guessedType)) {
         problems.addProblem(
             file,
@@ -140,6 +166,30 @@ public class DataTypeValidator extends AbstractRdfValidator {
                 + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
                 + t.getObject() + ")"
         );
+      }
+
+      double[] ngValues = dataNgValues.get(t.getPredicate().getURI());
+      if (ngValues != null && ngValues.length > 0) {
+        try {
+          double val = Double.parseDouble(value);
+          boolean match = false;
+          for (double v : ngValues) {
+            if (v == val) {
+              match = true;
+            }
+          }
+          if (match) {
+            problems.addProblem(
+                file,
+                LintProblem.ErrorLevel.INFO,
+                "Outlier:" + val
+                    + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
+                    + t.getObject() + ")"
+            );
+          }
+        } catch (NumberFormatException ex) {
+          // Invalid Number Format
+        }
       }
     });
   }
