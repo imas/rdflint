@@ -5,8 +5,11 @@ import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.utils.EditorconfigCheckerUtils;
 import com.github.imas.rdflint.utils.StringMatchUtils;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import org.editorconfig.checker.util.EndOfLine;
@@ -14,6 +17,8 @@ import org.editorconfig.checker.util.IndentStyle;
 import org.mozilla.universalchardet.UniversalDetector;
 
 public class FileEncodingValidator extends AbstractRdfValidator {
+
+  UniversalDetector detector = new UniversalDetector();
 
   @Override
   public void validateFile(LintProblemSet problems, String path, String parentPath) {
@@ -75,7 +80,17 @@ public class FileEncodingValidator extends AbstractRdfValidator {
     // validation
     String encoding = null;
     try {
-      encoding = UniversalDetector.detectCharset(f);
+      byte[] buf = new byte[4096];
+      int nread;
+      BufferedInputStream br = new BufferedInputStream(Files.newInputStream(Paths.get(path)));
+      while ((nread = br.read(buf)) > 0 && !detector.isDone()) {
+        detector.handleData(buf, 0, nread);
+      }
+      br.close();
+      detector.dataEnd();
+      encoding = detector.getDetectedCharset();
+      detector.reset();
+
       if (encoding != null && charset != null && !charset.equals(encoding)) {
         problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
             "File encoding expected " + charset + ", but " + encoding);
