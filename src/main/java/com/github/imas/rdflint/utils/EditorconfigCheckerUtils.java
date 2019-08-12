@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.editorconfig.checker.util.EndOfLine;
+import org.editorconfig.checker.util.IndentStyle;
 
 public class EditorconfigCheckerUtils {
 
@@ -63,6 +64,27 @@ public class EditorconfigCheckerUtils {
       method.setAccessible(true);
 
       Object instance = cons.newInstance(f);
+      rtn = (boolean) method.invoke(instance, (Object[]) null);
+    } catch (ClassNotFoundException | NoSuchMethodException
+        | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+      rtn = false;
+    }
+    return rtn;
+  }
+
+  /**
+   * Wrapper of IndentValidator.
+   */
+  public static boolean validateIndent(File f, IndentStyle style, int width) {
+    boolean rtn = false;
+    try {
+      Class clazz = Class.forName("org.editorconfig.checker.validate.IndentValidator");
+      Constructor cons = clazz.getDeclaredConstructor(File.class, IndentStyle.class, int.class);
+      cons.setAccessible(true);
+      Method method = clazz.getDeclaredMethod("validate");
+      method.setAccessible(true);
+
+      Object instance = cons.newInstance(f, style, width);
       rtn = (boolean) method.invoke(instance, (Object[]) null);
     } catch (ClassNotFoundException | NoSuchMethodException
         | InstantiationException | IllegalAccessException | InvocationTargetException ex) {

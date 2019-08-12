@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.config;
 
 import java.util.List;
+import java.util.Map;
 
 public class RdfLintParameters {
 
@@ -9,6 +10,7 @@ public class RdfLintParameters {
   private String baseUri;
   private List<CustomRule> rules;
   private List<GenerationRule> generation;
+  private Map<String, Object> validation;
 
   public String getTargetDir() {
     return targetDir;
@@ -40,6 +42,14 @@ public class RdfLintParameters {
 
   public void setGeneration(List<GenerationRule> generation) {
     this.generation = generation;
+  }
+
+  public Map<String, Object> getValidation() {
+    return validation;
+  }
+
+  public void setValidation(Map<String, Object> validation) {
+    this.validation = validation;
   }
 
   public List<CustomRule> getRules() {

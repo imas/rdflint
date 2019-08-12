@@ -1,0 +1,3 @@
+baseUri: https://sparql.crssnky.xyz/imasrdf/
+validation:
+  hoge: value

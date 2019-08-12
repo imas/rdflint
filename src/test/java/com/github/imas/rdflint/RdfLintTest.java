@@ -22,6 +22,16 @@ public class RdfLintTest {
   }
 
   @Test
+  public void loadConfigValid() throws Exception {
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint
+        .loadConfig(getParentPath("config/rdflint-config-validation.yml"));
+
+    assertEquals("https://sparql.crssnky.xyz/imasrdf/", params.getBaseUri());
+    assertEquals("value", params.getValidation().get("hoge"));
+  }
+
+  @Test
   public void validxml() throws Exception {
     RdfLintParameters params = new RdfLintParameters();
     params.setBaseUri("https://sparql.crssnky.xyz/imasrdf/");
@@ -45,6 +55,19 @@ public class RdfLintTest {
     assertEquals(1, problems.problemSize());
     Assert.assertArrayEquals(
         new String[]{"invalidxml.rdf"},
+        problems.getProblemSet().keySet().toArray(new String[]{}));
+  }
+
+  @Test
+  public void fileencoding() throws Exception {
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint.loadConfig(getParentPath("fileencoding/rdflint-config.yml"));
+    LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("fileencoding"));
+    lint.printLintProblem(problems);
+
+    assertEquals(1, problems.problemSize());
+    Assert.assertArrayEquals(
+        new String[]{"utf16.rdf"},
         problems.getProblemSet().keySet().toArray(new String[]{}));
   }
 
