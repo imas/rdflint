@@ -4,7 +4,7 @@
     >
 
   <rdf:Description rdf:about="something">
-    <schema:familyName xml:lang="ja">familyName</schema:familyName>
+    <schema:familyName xml:lang="ja">日本語</schema:familyName>
   </rdf:Description>
 
 </rdf:RDF>

@@ -5,6 +5,7 @@ import com.github.imas.rdflint.validator.RdfValidator;
 import com.github.imas.rdflint.validator.impl.CustomQueryValidator;
 import com.github.imas.rdflint.validator.impl.DataTypeValidator;
 import com.github.imas.rdflint.validator.impl.DegradeValidator;
+import com.github.imas.rdflint.validator.impl.FileEncodingValidator;
 import com.github.imas.rdflint.validator.impl.RdfSyntaxValidator;
 import com.github.imas.rdflint.validator.impl.TrimValidator;
 import com.github.imas.rdflint.validator.impl.UndefinedSubjectValidator;
@@ -39,6 +40,8 @@ import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFParser;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
@@ -52,6 +55,8 @@ import org.yaml.snakeyaml.Yaml;
 
 public class RdfLint {
 
+  private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
+
   /**
    * rdflint entry point.
    */
@@ -63,10 +68,16 @@ public class RdfLint {
     options.addOption("targetdir", true, "Target Directory Path");
     options.addOption("origindir", true, "Origin Dataset Directory Path");
     options.addOption("config", true, "Configuration file Path");
-    options.addOption("i", false, "Interactive Mode");
+    options.addOption("i", false, "Interactive mode");
+    options.addOption("v", false, "Verbose logging mode");
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
+
+    // verbose logging mode
+    if (cmd.hasOption("v")) {
+      Logger.getLogger("com.github.imas.rdflint").setLevel(Level.TRACE);
+    }
 
     // Set parameter
     String baseUri = cmd.getOptionValue("baseuri");
@@ -121,6 +132,7 @@ public class RdfLint {
    */
   LintProblemSet lintRdfDataSet(RdfLintParameters params, String targetDir)
       throws IOException {
+    logger.trace("lintRdfDataSet: in");
 
     // execute generator
     generateRdfDataSet(params, targetDir);
@@ -129,6 +141,7 @@ public class RdfLint {
 
     // initialize validators
     List<RdfValidator> validators = Arrays.asList(
+        new FileEncodingValidator(),
         new RdfSyntaxValidator(),
         new UndefinedSubjectValidator(),
         new DataTypeValidator(),
@@ -165,6 +178,7 @@ public class RdfLint {
       v.close();
     });
 
+    logger.trace("lintRdfDataSet: out");
     return rtn;
   }
 

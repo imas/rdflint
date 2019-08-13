@@ -1,0 +1,5 @@
+baseUri: https://sparql.crssnky.xyz/imasrdf/
+validation:
+  fileEncoding:
+    - target: "*.rdf"
+      charset: utf-8

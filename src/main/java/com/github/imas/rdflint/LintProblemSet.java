@@ -16,15 +16,18 @@ public class LintProblemSet {
     problemSet.get(fileName).add(new LintProblem(level, message));
   }
 
-  int problemSize() {
+  public int problemSize() {
     return problemSet.values().size();
   }
 
-  boolean hasProblem() {
+  public boolean hasProblem() {
     return problemSize() > 0;
   }
 
-  long errorSize() {
+  /**
+   * return error size.
+   */
+  public long errorSize() {
     return problemSet.values().stream()
         .mapToLong(lp -> lp.stream()
             .filter(t -> t.getLevel() == ErrorLevel.ERROR || t.getLevel() == ErrorLevel.WARN)
@@ -32,11 +35,11 @@ public class LintProblemSet {
         .sum();
   }
 
-  boolean hasError() {
+  public boolean hasError() {
     return errorSize() > 0;
   }
 
-  Map<String, List<LintProblem>> getProblemSet() {
+  public Map<String, List<LintProblem>> getProblemSet() {
     return problemSet;
   }
 

@@ -11,8 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.jena.graph.Triple;
+import org.apache.log4j.Logger;
 
 public class DataTypeValidator extends AbstractRdfValidator {
+
+  private static final Logger logger = Logger.getLogger(DataTypeValidator.class.getName());
 
   enum DataType {
     STRING,
@@ -129,6 +132,9 @@ public class DataTypeValidator extends AbstractRdfValidator {
 
   @Override
   public void validateTripleSet(LintProblemSet problems, String file, List<Triple> tripeSet) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("validateTripleSet: in (file=" + file + ")");
+    }
     // compute outlier
     HashMap<String, double[]> dataNgValues = new HashMap<>();
     Set<String> predicates = tripeSet.stream()
@@ -192,6 +198,7 @@ public class DataTypeValidator extends AbstractRdfValidator {
         }
       }
     });
+    logger.trace("validateTripleSet: out");
   }
 
 }
