@@ -19,6 +19,14 @@ public class FileEncodingValidatorTest {
     return this.getClass().getClassLoader().getResource("testRDFs/fileencoding").getPath();
   }
 
+  private LintProblemSet callFileEncodingValidate(String rdfname, RdfLintParameters param) {
+    LintProblemSet problems = new LintProblemSet();
+    FileEncodingValidator validator = new FileEncodingValidator();
+    validator.setParameters(param);
+    validator.validateFile(problems, getParentPath() + "/" + rdfname, getParentPath());
+    return problems;
+  }
+
   private static RdfLintParameters createRdfLintParameters(List<Map<String, String>> maps) {
     RdfLintParameters param = new RdfLintParameters();
     if (maps == null) {
@@ -47,10 +55,7 @@ public class FileEncodingValidatorTest {
 
     // call
     String rdfname = "utf8.rdf";
-    LintProblemSet problems = new LintProblemSet();
-    FileEncodingValidator validator = new FileEncodingValidator();
-    validator.setParameters(param);
-    validator.validateFile(problems, getParentPath() + "/" + rdfname, getParentPath());
+    LintProblemSet problems = callFileEncodingValidate(rdfname, param);
 
     // validate
     assertFalse(problems.hasError());
@@ -67,10 +72,7 @@ public class FileEncodingValidatorTest {
 
     // call
     String rdfname = "utf8.rdf";
-    LintProblemSet problems = new LintProblemSet();
-    FileEncodingValidator validator = new FileEncodingValidator();
-    validator.setParameters(param);
-    validator.validateFile(problems, getParentPath() + "/" + rdfname, getParentPath());
+    LintProblemSet problems = callFileEncodingValidate(rdfname, param);
 
     // validate
     assertTrue(problems.hasError());
@@ -89,13 +91,106 @@ public class FileEncodingValidatorTest {
 
     // call
     String rdfname = "utf8.rdf";
-    LintProblemSet problems = new LintProblemSet();
-    FileEncodingValidator validator = new FileEncodingValidator();
-    validator.setParameters(param);
-    validator.validateFile(problems, getParentPath() + "/" + rdfname, getParentPath());
+    LintProblemSet problems = callFileEncodingValidate(rdfname, param);
 
     // validate
     assertFalse(problems.hasError());
+  }
+
+  @Test
+  public void eol() throws Exception {
+    // prepare
+    List<Map<String, String>> validationParams = new LinkedList<>();
+    validationParams.add(new HashMap<>());
+    validationParams.get(0).put("target", "*");
+    validationParams.get(0).put("end_of_line", "lf");
+    RdfLintParameters param = createRdfLintParameters(validationParams);
+
+    // call & validate 1
+    String rdfname1 = "lf.txt";
+    LintProblemSet problems1 = callFileEncodingValidate(rdfname1, param);
+    assertFalse(problems1.hasError());
+
+    // call & validate 2
+    String rdfname2 = "crlf.txt";
+    LintProblemSet problems2 = callFileEncodingValidate(rdfname2, param);
+    assertTrue(problems2.hasError());
+    assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
+    assertTrue(problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("LF") > 0);
+  }
+
+
+  @Test
+  public void finalNewLine() throws Exception {
+    // prepare
+    List<Map<String, String>> validationParams = new LinkedList<>();
+    validationParams.add(new HashMap<>());
+    validationParams.get(0).put("target", "*");
+    validationParams.get(0).put("insert_final_newline", "true");
+    RdfLintParameters param = createRdfLintParameters(validationParams);
+
+    // call & validate 1
+    String rdfname1 = "finalnewline_exists.txt";
+    LintProblemSet problems1 = callFileEncodingValidate(rdfname1, param);
+    assertFalse(problems1.hasError());
+
+    // call & validate 2
+    String rdfname2 = "finalnewline_noexists.txt";
+    LintProblemSet problems2 = callFileEncodingValidate(rdfname2, param);
+    dumpLintProblem(problems2.getProblemSet().get(rdfname2));
+    assertTrue(problems2.hasError());
+    assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
+    assertTrue(
+        problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("final new line") > 0);
+  }
+
+
+  @Test
+  public void trailingWhiteSpace() throws Exception {
+    // prepare
+    List<Map<String, String>> validationParams = new LinkedList<>();
+    validationParams.add(new HashMap<>());
+    validationParams.get(0).put("target", "*");
+    validationParams.get(0).put("trim_trailing_whitespace", "true");
+    RdfLintParameters param = createRdfLintParameters(validationParams);
+
+    // call & validate 1
+    String rdfname1 = "trailingwhitespace_noexists.txt";
+    LintProblemSet problems1 = callFileEncodingValidate(rdfname1, param);
+    assertFalse(problems1.hasError());
+
+    // call & validate 2
+    String rdfname2 = "trailingwhitespace_exists.txt";
+    LintProblemSet problems2 = callFileEncodingValidate(rdfname2, param);
+    assertTrue(problems2.hasError());
+    dumpLintProblem(problems2.getProblemSet().get(rdfname2));
+    assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
+    assertTrue(
+        problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("white space") > 0);
+  }
+
+  @Test
+  public void indent() throws Exception {
+    // prepare
+    List<Map<String, String>> validationParams = new LinkedList<>();
+    validationParams.add(new HashMap<>());
+    validationParams.get(0).put("target", "*");
+    validationParams.get(0).put("indent_style", "space");
+    validationParams.get(0).put("indent_size", "2");
+    RdfLintParameters param = createRdfLintParameters(validationParams);
+
+    // call & validate 1
+    String rdfname1 = "indent_space2.txt";
+    LintProblemSet problems1 = callFileEncodingValidate(rdfname1, param);
+    assertFalse(problems1.hasError());
+
+    // call & validate 2
+    String rdfname2 = "indent_tab.txt";
+    LintProblemSet problems2 = callFileEncodingValidate(rdfname2, param);
+    dumpLintProblem(problems2.getProblemSet().get(rdfname2));
+    assertTrue(problems2.hasError());
+    assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
+    assertTrue(problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("SPACE") > 0);
   }
 
 }

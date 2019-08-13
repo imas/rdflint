@@ -17,8 +17,11 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
+import org.apache.log4j.Logger;
 
 public class UndefinedSubjectValidator extends AbstractRdfValidator {
+
+  private static final Logger logger = Logger.getLogger(UndefinedSubjectValidator.class.getName());
 
   private String[] prefixes;
   private Set<String> subjects;
@@ -67,6 +70,9 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
 
   @Override
   public void validateTripleSet(LintProblemSet problems, String file, List<Triple> tripeSet) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("validateTripleSet: in (file=" + file + ")");
+    }
     if (this.getParameters().getBaseUri() == null) {
       return;
     }
@@ -87,5 +93,6 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
         }
       }
     });
+    logger.trace("validateTripleSet: out");
   }
 }

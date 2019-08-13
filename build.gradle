@@ -13,7 +13,6 @@ targetCompatibility = 1.8
 
 repositories {
     jcenter()
-    maven { url 'https://jitpack.io' }
 }
 dependencies {
     compile 'org.apache.jena:jena-arq:3.9.0'
@@ -24,7 +23,6 @@ dependencies {
     compile 'org.slf4j:slf4j-log4j12:1.7.25'
     compile 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
     compile 'com.github.albfernandez:juniversalchardet:2.3.0'
-    compile 'com.github.editorconfig-checker:editorconfig-checker.java:4ccb7495e6'
 
     testCompile 'junit:junit:4.+'
 }
