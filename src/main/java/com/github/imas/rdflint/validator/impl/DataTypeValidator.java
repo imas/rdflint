@@ -2,6 +2,8 @@ package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
 import com.github.imas.rdflint.LintProblemSet;
+import com.github.imas.rdflint.utils.DataTypeUtils;
+import com.github.imas.rdflint.utils.DataTypeUtils.DataType;
 import com.github.imas.rdflint.utils.StatsTestUtils;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.util.Collection;
@@ -16,17 +18,6 @@ import org.apache.log4j.Logger;
 public class DataTypeValidator extends AbstractRdfValidator {
 
   private static final Logger logger = Logger.getLogger(DataTypeValidator.class.getName());
-
-  enum DataType {
-    STRING,
-    FLOAT,
-    INTEGER,
-    NATURAL
-  }
-
-  private static final String REGEX_NATURAL = "\\d+";
-  private static final String REGEX_INTEGER = "[+-]?\\d+";
-  private static final String REGEX_FLOAT = "[+-]?\\d+(\\.\\d+)?";
 
   private static final double TYPE_GUESS_THRESHOLD = 0.95;
 
@@ -48,7 +39,7 @@ public class DataTypeValidator extends AbstractRdfValidator {
     predicates.forEach(p -> {
       List<DataType> datatypes = triples.stream()
           .filter(t -> t.getPredicate().getURI().equals(p))
-          .map(t -> guessDataType(t.getObject().getLiteralValue().toString()))
+          .map(t -> DataTypeUtils.guessDataType(t.getObject().getLiteralValue().toString()))
           .collect(Collectors.toList());
 
       long cntNatural = 0;
@@ -88,48 +79,6 @@ public class DataTypeValidator extends AbstractRdfValidator {
     });
   }
 
-  private DataType guessDataType(String s) {
-    if (s.matches(REGEX_NATURAL)) {
-      return DataType.NATURAL;
-    } else if (s.matches(REGEX_INTEGER)) {
-      return DataType.INTEGER;
-    } else if (s.matches(REGEX_FLOAT)) {
-      return DataType.FLOAT;
-    }
-    return DataType.STRING;
-  }
-
-  private boolean checkDataType(DataType dataType, DataType expected) {
-    switch (expected) {
-      case NATURAL:
-        if (dataType == DataType.NATURAL) {
-          return true;
-        } else {
-          return false;
-        }
-      case INTEGER:
-        if (dataType == DataType.NATURAL
-            || dataType == DataType.INTEGER) {
-          return true;
-        } else {
-          return false;
-        }
-      case FLOAT:
-        if (dataType == DataType.NATURAL
-            || dataType == DataType.INTEGER
-            || dataType == DataType.FLOAT) {
-          return true;
-        } else {
-          return false;
-        }
-      case STRING:
-        return true;
-      default:
-        break;
-    }
-    return false;
-  }
-
   @Override
   public void validateTripleSet(LintProblemSet problems, String file, List<Triple> tripeSet) {
     if (logger.isTraceEnabled()) {
@@ -142,10 +91,11 @@ public class DataTypeValidator extends AbstractRdfValidator {
         .collect(Collectors.toSet());
     predicates.forEach(p -> {
       dataTypeMap.forEach((pred, dataType) -> {
-        if (checkDataType(dataType, DataType.FLOAT)) {
+        if (DataTypeUtils.isDataType(dataType, DataType.FLOAT)) {
           List<Double> valueList = tripeSet.stream()
               .filter(t -> t.getPredicate().getURI().equals(pred))
-              .filter(t -> checkDataType(guessDataType(t.getObject().getLiteralValue().toString()),
+              .filter(t -> DataTypeUtils.isDataType(
+                  DataTypeUtils.guessDataType(t.getObject().getLiteralValue().toString()),
                   DataType.FLOAT))
               .map(t -> Double.parseDouble(t.getObject().getLiteralValue().toString()))
               .collect(Collectors.toList());
@@ -161,14 +111,29 @@ public class DataTypeValidator extends AbstractRdfValidator {
     });
 
     tripeSet.stream().filter(t -> t.getObject().isLiteral()).forEach(t -> {
+
       String value = t.getObject().getLiteralValue().toString();
+
+      // check data type by guessedType
       DataType guessedType = dataTypeMap.get(t.getPredicate().getURI());
-      DataType dataType = guessDataType(value);
-      if (!checkDataType(dataType, guessedType)) {
+      DataType dataType = DataTypeUtils.guessDataType(value);
+      if (!DataTypeUtils.isDataType(dataType, guessedType)) {
         problems.addProblem(
             file,
             LintProblem.ErrorLevel.INFO,
             "DataType unmatched: expected " + guessedType + ", but " + dataType
+                + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
+                + t.getObject() + ")"
+        );
+      }
+
+      // check data type by language
+      String litLang = t.getObject().getLiteralLanguage();
+      if (!DataTypeUtils.isLang(value, litLang)) {
+        problems.addProblem(
+            file,
+            LintProblem.ErrorLevel.INFO,
+            "Data LanguageType unmatched: lang=" + litLang + ", but " + value
                 + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
                 + t.getObject() + ")"
         );
