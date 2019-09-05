@@ -2,6 +2,7 @@ rdflint
 ---
 
 [![](https://jitpack.io/v/imas/rdflint.svg)](https://jitpack.io/#imas/rdflint)
+[![](https://img.shields.io/badge/users_guide-ja-blue)](https://imas.github.io/rdflint/)
 
 ## What's rdflint
 
