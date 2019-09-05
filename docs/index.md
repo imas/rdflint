@@ -17,6 +17,20 @@ rdflintには、以下のような機能があります。
 - SPARQLクエリの実行結果からのRDFファイル生成
 - ローカルPCでの試験的にSPARQLクエリ実行
 
-古いバージョンを対象とした説明ですが、以下のスライドでもツールの紹介をしています。  
-RDFチェックツール「rdflint」のご紹介  
-[https://www.slideshare.net/takemikami/rdfrdflint](https://www.slideshare.net/takemikami/rdfrdflint)
+## 利用実績
+
+rdflintを導入しているプロジェクトを紹介します。
+
+- im@sparql  
+  [https://sparql.crssnky.xyz/imas/](https://sparql.crssnky.xyz/imas/)
+
+## 紹介資料、解説資料
+
+rdflintの紹介資料や解説資料、記事を紹介します。
+
+- RDFのチェックツール「rdflint」とコミュニティによるオープンデータの作成 | slideshare  
+  [https://www.slideshare.net/takemikami/rdfrdflint-153693907](https://www.slideshare.net/takemikami/rdfrdflint-153693907)
+- RDFチェックツール「rdflint」のご紹介 | slideshare  
+  [https://www.slideshare.net/takemikami/rdfrdflint](https://www.slideshare.net/takemikami/rdfrdflint)
+- im@sparqlにContributeしやすくするためにRDFファイルのチェックツールを作った | takemikami.com  
+  [https://takemikami.com/2018/12/19/imsparqlContributeRDF.html](https://takemikami.com/2018/12/19/imsparqlContributeRDF.html)
