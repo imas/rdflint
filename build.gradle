@@ -23,6 +23,7 @@ dependencies {
     compile 'org.slf4j:slf4j-log4j12:1.7.25'
     compile 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
     compile 'com.github.albfernandez:juniversalchardet:2.3.0'
+    compile group: 'org.topbraid', name: 'shacl', version: '1.3.0'
 
     testCompile 'junit:junit:4.+'
 }
