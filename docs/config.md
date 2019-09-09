@@ -26,6 +26,16 @@ rdflintの設定ファイルの記載方法を説明します。
       - input
       - template
       - output
+- validation
+   - fileEncoding
+      - リスト
+         - target
+         - charset
+         - end_of_line
+         - indent_style
+         - indent_size
+         - insert_final_newline
+         - trim_trailing_whitespace
 
 設定ファイルの例
 
@@ -83,6 +93,20 @@ rule配下に、以下のkey-valueを持つマップのリストを指定しま�
 - target: 対象とするファイルのパス
 - query: 実行するSPARQLクエリ
 - valid: queryの結果を処理するgroovyスクリプト
+
+## validation - fileEncoding: 文字改行コード検証のルール指定
+
+文字改行コード検証のルールを指定します。
+
+validation-fileEncoding配下に、以下のkey-valueを持つマップのリストを指定します。
+
+- target: 対象ファイル名
+- charset: 文字コード
+- end_of_line: 改行コード
+- indent_style: インデント文字
+- indent_size: インデントサイズ
+- insert_final_newline: ファイル末尾改行の要否
+- trim_trailing_whitespace: 行末空白削除の要否
 
 ## generation: RDFファイル生成の設定
 
