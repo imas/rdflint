@@ -97,6 +97,10 @@ public class AbstractRdfValidator implements RdfValidator {
   }
 
   @Override
+  public void reportAdditionalProblem(LintProblemSet problems) {
+  }
+
+  @Override
   public void close() {
   }
 }

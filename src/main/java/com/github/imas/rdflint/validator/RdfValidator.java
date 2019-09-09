@@ -18,6 +18,8 @@ public interface RdfValidator {
 
   void validateOriginTripleSet(LintProblemSet problems, String file, List<Triple> tripeSet);
 
+  void reportAdditionalProblem(LintProblemSet problems);
+
   void close();
 
 }

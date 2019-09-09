@@ -7,8 +7,10 @@ import com.github.imas.rdflint.validator.impl.DataTypeValidator;
 import com.github.imas.rdflint.validator.impl.DegradeValidator;
 import com.github.imas.rdflint.validator.impl.FileEncodingValidator;
 import com.github.imas.rdflint.validator.impl.RdfSyntaxValidator;
+import com.github.imas.rdflint.validator.impl.ShaclValidator;
 import com.github.imas.rdflint.validator.impl.TrimValidator;
 import com.github.imas.rdflint.validator.impl.UndefinedSubjectValidator;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -147,6 +149,7 @@ public class RdfLint {
         new DataTypeValidator(),
         new CustomQueryValidator(),
         new TrimValidator(),
+        new ShaclValidator(),
         new DegradeValidator()
     );
     validators.forEach(v ->
@@ -175,6 +178,7 @@ public class RdfLint {
       v.prepareValidationResource(fileTripleSet);
       fileTripleSet.forEach((f, l) -> v.validateTripleSet(rtn, f, l));
       originFileTripleSet.forEach((f, l) -> v.validateOriginTripleSet(rtn, f, l));
+      v.reportAdditionalProblem(rtn);
       v.close();
     });
 
