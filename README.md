@@ -6,9 +6,9 @@ rdflint
 
 ## What's rdflint
 
-Rdflint is a linter for RDF files. Easy to check syntax and other things. rdflint is powered by Apache Jena.
+rdflint is a linter for RDF files. Easy to check syntax and other things. rdflint is powered by Apache Jena.
 
-Rdflint has following functions.
+rdflint has following functions.
 
 - Syntax check of rdf and Turtle(ttl).
 - Undefined subject check when use as predicate or object.
