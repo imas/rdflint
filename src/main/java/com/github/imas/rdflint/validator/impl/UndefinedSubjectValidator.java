@@ -84,9 +84,7 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
               problems.addProblem(
                   file,
                   LintProblem.ErrorLevel.WARN,
-                  "Undefined URI: " + n.getURI()
-                      + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                      + t.getObject() + ")"
+                  this, "undefinedUri", n.getURI(), t
               );
             }
           }

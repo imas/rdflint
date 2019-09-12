@@ -10,7 +10,9 @@ import com.github.imas.rdflint.config.RdfLintParameters;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FileEncodingValidatorTest {
@@ -43,6 +45,12 @@ public class FileEncodingValidatorTest {
       System.out.println(problem.getLevel() + "\t" + problem.getMessage());
     }
   }
+
+  @BeforeClass
+  public static void beforeClass() {
+    Locale.setDefault(Locale.ENGLISH);
+  }
+
 
   @Test
   public void encodingUtf8_Ok() throws Exception {

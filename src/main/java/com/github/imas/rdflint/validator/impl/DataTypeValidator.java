@@ -121,9 +121,7 @@ public class DataTypeValidator extends AbstractRdfValidator {
         problems.addProblem(
             file,
             LintProblem.ErrorLevel.INFO,
-            "DataType unmatched: expected " + guessedType + ", but " + dataType
-                + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                + t.getObject() + ")"
+            this, "notmatchedGuessedDataType", guessedType, dataType, t
         );
       }
 
@@ -133,9 +131,7 @@ public class DataTypeValidator extends AbstractRdfValidator {
         problems.addProblem(
             file,
             LintProblem.ErrorLevel.INFO,
-            "Data LanguageType unmatched: lang=" + litLang + ", but " + value
-                + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                + t.getObject() + ")"
+            this, "notmatchedLanguageType", litLang, value, t
         );
       }
 
@@ -153,9 +149,7 @@ public class DataTypeValidator extends AbstractRdfValidator {
             problems.addProblem(
                 file,
                 LintProblem.ErrorLevel.INFO,
-                "Outlier:" + val
-                    + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                    + t.getObject() + ")"
+                this, "predictedOutlier", val, t
             );
           }
         } catch (NumberFormatException ex) {
