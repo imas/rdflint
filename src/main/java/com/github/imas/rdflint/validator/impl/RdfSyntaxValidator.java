@@ -21,7 +21,7 @@ public class RdfSyntaxValidator extends AbstractRdfValidator {
       problems.addProblem(
           filename,
           LintProblem.ErrorLevel.ERROR,
-          ex.getMessage());
+          this, "parseError", ex.getMessage());
     }
     g.close();
   }

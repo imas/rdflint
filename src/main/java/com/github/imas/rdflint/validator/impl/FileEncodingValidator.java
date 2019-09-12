@@ -107,7 +107,7 @@ public class FileEncodingValidator extends AbstractRdfValidator {
 
       if (encoding != null && charset != null && !charset.equals(encoding)) {
         problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            "File encoding expected " + charset + ", but " + encoding);
+            this, "invalidEncoding", charset, encoding);
       }
     } catch (IOException e) {
       e.printStackTrace(); //NOPMD
@@ -174,19 +174,19 @@ public class FileEncodingValidator extends AbstractRdfValidator {
 
       if (!eolResult) {
         problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            "End of line is not " + eol + ".");
+            this, "invalidEol", eol);
       }
       if (newline && !fnlResult && (encoding == null || "UTF-8".equals(encoding))) {
         problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            "Need final new line.");
+            this, "needFinalNewLine");
       }
       if (indentStyle != IndentStyle.NONE && !indResult) {
         problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            "Need indent size is " + indentSize + " by " + indentStyle + ".");
+            this, "invalidIndentSize", indentSize, indentStyle);
       }
       if (!twsResult) {
         problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            "Need trailing white space.");
+            this, "needTrailingWhiteSpace");
       }
 
     } catch (IOException e) {

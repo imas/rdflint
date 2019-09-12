@@ -19,9 +19,7 @@ public class TrimValidator extends AbstractRdfValidator {
           problems.addProblem(
               file,
               LintProblem.ErrorLevel.WARN,
-              "Need Trim Literal: '" + s + "'"
-                  + " (Triple: " + t.getSubject() + " - " + t.getPredicate() + " - "
-                  + t.getObject() + ")"
+              this, "needTrimLiteral", s, t
           );
         }
       }
