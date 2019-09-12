@@ -40,3 +40,5 @@ rdflintを導入しているプロジェクトを紹介します。
 
 - im@sparql  
   [https://sparql.crssnky.xyz/imas/](https://sparql.crssnky.xyz/imas/)
+- Cashless_Sparql  
+  [https://github.com/crssnky/Cashless_Sparql](https://github.com/crssnky/Cashless_Sparql)
