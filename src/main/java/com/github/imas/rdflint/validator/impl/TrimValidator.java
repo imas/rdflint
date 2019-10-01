@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.util.List;
@@ -18,8 +19,7 @@ public class TrimValidator extends AbstractRdfValidator {
         if (!s.equals(s.trim())) {
           problems.addProblem(
               file,
-              LintProblem.ErrorLevel.WARN,
-              this, "needTrimLiteral", s, t
+              new LintProblem(ErrorLevel.WARN, t, this, "needTrimLiteral", s)
           );
         }
       }

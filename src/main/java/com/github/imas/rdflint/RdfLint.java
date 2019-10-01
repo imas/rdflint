@@ -1,32 +1,21 @@
 package com.github.imas.rdflint;
 
 import com.github.imas.rdflint.config.RdfLintParameters;
-import com.github.imas.rdflint.validator.RdfValidator;
-import com.github.imas.rdflint.validator.impl.CustomQueryValidator;
-import com.github.imas.rdflint.validator.impl.DataTypeValidator;
-import com.github.imas.rdflint.validator.impl.DegradeValidator;
-import com.github.imas.rdflint.validator.impl.FileEncodingValidator;
-import com.github.imas.rdflint.validator.impl.RdfSyntaxValidator;
-import com.github.imas.rdflint.validator.impl.ShaclValidator;
-import com.github.imas.rdflint.validator.impl.TrimValidator;
-import com.github.imas.rdflint.validator.impl.UndefinedSubjectValidator;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.jena.graph.Factory;
@@ -71,13 +60,21 @@ public class RdfLint {
     options.addOption("origindir", true, "Origin Dataset Directory Path");
     options.addOption("config", true, "Configuration file Path");
     options.addOption("i", false, "Interactive mode");
-    options.addOption("v", false, "Verbose logging mode");
+    options.addOption("h", false, "Print usage");
+    options.addOption("vv", false, "Verbose logging (for debugging)");
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
 
+    // print usage
+    if (cmd.hasOption("h")) {
+      HelpFormatter f = new HelpFormatter();
+      f.printHelp("rdflint [options]", options);
+      return;
+    }
+
     // verbose logging mode
-    if (cmd.hasOption("v")) {
+    if (cmd.hasOption("vv")) {
       Logger.getLogger("com.github.imas.rdflint").setLevel(Level.TRACE);
     }
 
@@ -107,7 +104,7 @@ public class RdfLint {
     } else {
       // Execute linter
       LintProblemSet problems = lint.lintRdfDataSet(params, parentPath);
-      lint.printLintProblem(problems);
+      LintProblemFormatter.out(System.out, problems);
       if (problems.hasError()) {
         System.exit(1);
       }
@@ -117,7 +114,7 @@ public class RdfLint {
   /**
    * load configuration file.
    */
-  RdfLintParameters loadConfig(String configPath) throws IOException {
+  public RdfLintParameters loadConfig(String configPath) throws IOException {
     if (configPath == null) {
       return new RdfLintParameters();
     }
@@ -125,7 +122,7 @@ public class RdfLint {
     return yaml.loadAs(
         new InputStreamReader(
             Files.newInputStream(Paths.get(new File(configPath).getCanonicalPath())),
-            Charset.forName("UTF-8")),
+            StandardCharsets.UTF_8),
         RdfLintParameters.class);
   }
 
@@ -139,71 +136,12 @@ public class RdfLint {
     // execute generator
     generateRdfDataSet(params, targetDir);
 
-    LintProblemSet rtn = new LintProblemSet();
-
-    // initialize validators
-    List<RdfValidator> validators = Arrays.asList(
-        new FileEncodingValidator(),
-        new RdfSyntaxValidator(),
-        new UndefinedSubjectValidator(),
-        new DataTypeValidator(),
-        new CustomQueryValidator(),
-        new TrimValidator(),
-        new ShaclValidator(),
-        new DegradeValidator()
-    );
-    validators.forEach(v ->
-        v.setParameters(params)
-    );
-
-    // validation: validateFile
-    String parentPath = new File(targetDir).getCanonicalPath();
-    Files.walk(Paths.get(parentPath))
-        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
-        .forEach(f -> validators.forEach(v -> v.validateFile(rtn, f.toString(), parentPath)));
-    if (rtn.hasProblem()) {
-      return rtn;
-    }
-
-    // parse rdf & ttl
-    String baseUri = params.getBaseUri();
-    Map<String, List<Triple>> fileTripleSet = loadFileTripleSet(parentPath, baseUri);
-    String originPath = params.getOriginDir() != null
-        ? new File(params.getOriginDir()).getCanonicalPath() : null;
-    Map<String, List<Triple>> originFileTripleSet = originPath != null
-        ? loadFileTripleSet(originPath, baseUri) : new ConcurrentHashMap<>();
-
-    // validation: validateTripleSet
-    validators.forEach(v -> {
-      v.prepareValidationResource(fileTripleSet);
-      fileTripleSet.forEach((f, l) -> v.validateTripleSet(rtn, f, l));
-      originFileTripleSet.forEach((f, l) -> v.validateOriginTripleSet(rtn, f, l));
-      v.reportAdditionalProblem(rtn);
-      v.close();
-    });
-
-    logger.trace("lintRdfDataSet: out");
-    return rtn;
+    // call validator runner
+    ValidationRunner runner = new ValidationRunner();
+    runner.appendRdfValidatorsFromPackage("com.github.imas.rdflint.validator.impl");
+    return runner.execute(params, targetDir);
   }
 
-  private Map<String, List<Triple>> loadFileTripleSet(String parentPath, String baseUri)
-      throws IOException {
-    return Files
-        .walk(Paths.get(parentPath))
-        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
-        .collect(Collectors.toMap(
-            e -> e.toString().substring(parentPath.length() + 1),
-            e -> {
-              Graph g = Factory.createGraphMem();
-              String filename = e.toString().substring(parentPath.length() + 1);
-              String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
-              RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
-              List<Triple> lst = g.find().toList();
-              g.close();
-              return lst;
-            }
-        ));
-  }
 
   /**
    * rdflint generation process.
@@ -277,22 +215,6 @@ public class RdfLint {
     });
   }
 
-
-  /**
-   * print formatted problems.
-   */
-  @SuppressWarnings("PMD")
-  void printLintProblem(LintProblemSet problems) {
-    problems.getProblemSet().forEach((f, l) -> {
-      System.out.println(f);
-      l.forEach(m ->
-          System.out
-              .println("  " + m.getLevel() + "  " + m.getMessage())
-      );
-      System.out.println();
-    });
-  }
-
   /**
    * execute interacitve mode.
    */
@@ -325,7 +247,7 @@ public class RdfLint {
           case "check":
           case "lint":
             LintProblemSet problems = this.lintRdfDataSet(params, parentPath);
-            this.printLintProblem(problems);
+            LintProblemFormatter.out(System.out, problems);
             break;
 
           case "reload":
@@ -363,13 +285,19 @@ public class RdfLint {
     String parentPath = new File(targetDir).getCanonicalPath();
     String baseUri = params.getBaseUri();
 
-    Map<String, List<Triple>> fileTripleSet = loadFileTripleSet(parentPath, baseUri);
-
     Graph g = Factory.createGraphMem();
-    fileTripleSet.forEach((f, l) -> {
-      l.forEach(g::add);
-    });
+    Files.walk(Paths.get(parentPath))
+        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
+        .forEach(e -> {
+          Graph gf = Factory.createGraphMem();
+          String filename = e.toString().substring(parentPath.length() + 1);
+          String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+          RDFParser.source(e.toString()).base(baseUri + subdir).parse(gf);
+          List<Triple> lst = gf.find().toList();
+          gf.close();
+          lst.forEach(g::add);
+        });
+
     return ModelFactory.createModelForGraph(g);
   }
-
 }

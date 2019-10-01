@@ -1,0 +1,4 @@
+needtrim.rdf:
+  - key: com.github.imas.rdflint.validator.impl.needTrimLiteral
+    subject: http://example.com/something
+    predicate: http://schema.org/familyName

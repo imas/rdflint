@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.util.Collection;
@@ -52,8 +53,8 @@ public class DegradeValidator extends AbstractRdfValidator {
         .filter(Objects::nonNull)
         .forEach(s -> {
           if (!this.subjectSet.contains(s)) {
-            problems.addProblem(file, LintProblem.ErrorLevel.INFO,
-                this, "removedSubject", s);
+            problems.addProblem(file,
+                new LintProblem(ErrorLevel.INFO, this, "removedSubject", s));
           }
         });
 
@@ -63,8 +64,8 @@ public class DegradeValidator extends AbstractRdfValidator {
         if (n.isURI()) {
           if (!this.flatTripleSet.contains(t)
               && this.subjectSet.contains(t.getSubject().toString())) {
-            problems.addProblem(file, LintProblem.ErrorLevel.INFO,
-                this, "removedTriple", t);
+            problems.addProblem(file,
+                new LintProblem(ErrorLevel.INFO, this, "removedTriple", t)); //NOPMD
           }
         }
       }
