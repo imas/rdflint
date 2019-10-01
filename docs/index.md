@@ -40,5 +40,7 @@ rdflintを導入しているプロジェクトを紹介します。
 
 - im@sparql  
   [https://sparql.crssnky.xyz/imas/](https://sparql.crssnky.xyz/imas/)
+- PrismDB  
+  [https://prismdb.takanakahiko.me/](https://prismdb.takanakahiko.me/)
 - Cashless_Sparql  
   [https://github.com/crssnky/Cashless_Sparql](https://github.com/crssnky/Cashless_Sparql)
