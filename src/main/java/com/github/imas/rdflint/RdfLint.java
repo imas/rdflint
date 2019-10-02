@@ -33,9 +33,11 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFParser;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
+import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.thymeleaf.TemplateEngine;
@@ -234,7 +236,13 @@ public class RdfLint {
         .build();
 
     while (true) {
-      String line = lineReader.readLine("SPARQL> ");
+      String line;
+
+      try {
+        line = lineReader.readLine("SPARQL> ");
+      } catch (UserInterruptException | EndOfFileException e) {
+        return;
+      }
 
       if (line.trim().charAt(0) == ':') {
         // execute command
