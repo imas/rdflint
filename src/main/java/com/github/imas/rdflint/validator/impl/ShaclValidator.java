@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.util.List;
@@ -57,7 +58,8 @@ public class ShaclValidator extends AbstractRdfValidator {
             .toList().get(0).getObject();
         result.remove(res, Node.ANY, Node.ANY);
         final String msg = buildReportMessage(triple, constraint, detail);
-        problems.addProblem(file, LintProblem.ErrorLevel.WARN, msg);
+        problems.addProblem(file,
+            new LintProblem(ErrorLevel.WARN, triple, this, "shaclViolation", msg));
       });
     });
   }
@@ -80,7 +82,8 @@ public class ShaclValidator extends AbstractRdfValidator {
               .find(s, shaclNode("sourceConstraintComponent"), Node.ANY)
               .toList().get(0).getObject();
           final String msg = buildReportMessage(subject, predicate, detail, constraint);
-          problems.addProblem("SHACL_Additional_Check", LintProblem.ErrorLevel.WARN, msg);
+          problems.addProblem("SHACL_Additional_Check",
+              new LintProblem(ErrorLevel.WARN, subject, this, "shaclViolation", msg));
         });
   }
 

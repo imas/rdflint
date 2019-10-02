@@ -1,0 +1,7 @@
+invalidxml.rdf:
+  - key: com.github.imas.rdflint.validator.impl.parseError
+    line: 7
+    column: 67
+  - key: com.github.imas.rdflint.validator.impl.parseError
+    line: 8
+    column: 5

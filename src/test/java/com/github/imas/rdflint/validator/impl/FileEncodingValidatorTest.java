@@ -18,7 +18,8 @@ import org.junit.Test;
 public class FileEncodingValidatorTest {
 
   private String getParentPath() {
-    return this.getClass().getClassLoader().getResource("testRDFs/fileencoding").getPath();
+    return this.getClass().getClassLoader()
+        .getResource("testValidatorsImpl/FileEncodingValidator/fileencoding").getPath();
   }
 
   private LintProblemSet callFileEncodingValidate(String rdfname, RdfLintParameters param) {
@@ -42,7 +43,8 @@ public class FileEncodingValidatorTest {
 
   private void dumpLintProblem(List<LintProblem> problems) {
     for (LintProblem problem : problems) {
-      System.out.println(problem.getLevel() + "\t" + problem.getMessage());
+      System.out.println(
+          problem.getLevel() + "\t" + problem.getKey() + "\t");
     }
   }
 
@@ -85,7 +87,10 @@ public class FileEncodingValidatorTest {
     // validate
     assertTrue(problems.hasError());
     assertEquals(1, problems.getProblemSet().get(rdfname).size());
-    assertTrue(problems.getProblemSet().get(rdfname).get(0).getMessage().indexOf("UTF-16LE") > 0);
+    assertEquals("com.github.imas.rdflint.validator.impl.invalidEncoding",
+        problems.getProblemSet().get(rdfname).get(0).getKey());
+    assertEquals("UTF-16LE",
+        problems.getProblemSet().get(rdfname).get(0).getArguments()[0]);
   }
 
   @Test
@@ -124,7 +129,10 @@ public class FileEncodingValidatorTest {
     LintProblemSet problems2 = callFileEncodingValidate(rdfname2, param);
     assertTrue(problems2.hasError());
     assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
-    assertTrue(problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("LF") > 0);
+    assertEquals("com.github.imas.rdflint.validator.impl.invalidEol",
+        problems2.getProblemSet().get(rdfname2).get(0).getKey());
+    assertEquals("LF",
+        problems2.getProblemSet().get(rdfname2).get(0).getArguments()[0].toString());
   }
 
 
@@ -148,8 +156,8 @@ public class FileEncodingValidatorTest {
     dumpLintProblem(problems2.getProblemSet().get(rdfname2));
     assertTrue(problems2.hasError());
     assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
-    assertTrue(
-        problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("final new line") > 0);
+    assertEquals("com.github.imas.rdflint.validator.impl.needFinalNewLine",
+        problems2.getProblemSet().get(rdfname2).get(0).getKey());
   }
 
 
@@ -173,8 +181,8 @@ public class FileEncodingValidatorTest {
     assertTrue(problems2.hasError());
     dumpLintProblem(problems2.getProblemSet().get(rdfname2));
     assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
-    assertTrue(
-        problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("white space") > 0);
+    assertEquals("com.github.imas.rdflint.validator.impl.needTrailingWhiteSpace",
+        problems2.getProblemSet().get(rdfname2).get(0).getKey());
   }
 
   @Test
@@ -198,7 +206,10 @@ public class FileEncodingValidatorTest {
     dumpLintProblem(problems2.getProblemSet().get(rdfname2));
     assertTrue(problems2.hasError());
     assertEquals(1, problems2.getProblemSet().get(rdfname2).size());
-    assertTrue(problems2.getProblemSet().get(rdfname2).get(0).getMessage().indexOf("SPACE") > 0);
+    assertEquals("com.github.imas.rdflint.validator.impl.invalidIndentSize",
+        problems2.getProblemSet().get(rdfname2).get(0).getKey());
+    assertEquals(2,
+        problems2.getProblemSet().get(rdfname2).get(0).getArguments()[0]);
   }
 
 }

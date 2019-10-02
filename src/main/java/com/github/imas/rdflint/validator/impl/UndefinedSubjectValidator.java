@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.io.InputStream;
@@ -83,8 +84,7 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
             if (n.getURI().startsWith(prefix) && !subjects.contains(n.getURI())) {
               problems.addProblem(
                   file,
-                  LintProblem.ErrorLevel.WARN,
-                  this, "undefinedUri", n.getURI(), t
+                  new LintProblem(ErrorLevel.WARN, t, this, "undefinedUri", n.getURI()) //NOPMD
               );
             }
           }

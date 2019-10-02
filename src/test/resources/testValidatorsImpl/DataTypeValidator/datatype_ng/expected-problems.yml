@@ -1,0 +1,4 @@
+datatype_ng.rdf:
+  - key: com.github.imas.rdflint.validator.impl.notmatchedGuessedDataType
+    subject: http://example.com/something20
+    predicate: http://schema.org/issueNumber

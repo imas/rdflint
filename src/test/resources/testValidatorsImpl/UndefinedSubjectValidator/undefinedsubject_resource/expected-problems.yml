@@ -1,0 +1,4 @@
+undefinedsubject_resource.rdf:
+  - key: com.github.imas.rdflint.validator.impl.undefinedUri
+    subject: http://example.com/something
+    predicate: http://schema.org/familyNamex

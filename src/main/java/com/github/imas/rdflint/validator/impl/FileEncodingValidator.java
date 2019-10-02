@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.utils.StringMatchUtils;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
@@ -106,8 +107,8 @@ public class FileEncodingValidator extends AbstractRdfValidator {
       detector.reset();
 
       if (encoding != null && charset != null && !charset.equals(encoding)) {
-        problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            this, "invalidEncoding", charset, encoding);
+        problems.addProblem(filename,
+            new LintProblem(ErrorLevel.WARN, this, "invalidEncoding", charset, encoding));
       }
     } catch (IOException e) {
       e.printStackTrace(); //NOPMD
@@ -173,20 +174,20 @@ public class FileEncodingValidator extends AbstractRdfValidator {
       lns.close();
 
       if (!eolResult) {
-        problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            this, "invalidEol", eol);
+        problems.addProblem(filename,
+            new LintProblem(ErrorLevel.WARN, this, "invalidEol", eol));
       }
       if (newline && !fnlResult && (encoding == null || "UTF-8".equals(encoding))) {
-        problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            this, "needFinalNewLine");
+        problems.addProblem(filename,
+            new LintProblem(ErrorLevel.WARN, this, "needFinalNewLine"));
       }
       if (indentStyle != IndentStyle.NONE && !indResult) {
-        problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            this, "invalidIndentSize", indentSize, indentStyle);
+        problems.addProblem(filename,
+            new LintProblem(ErrorLevel.WARN, this, "invalidIndentSize", indentSize, indentStyle));
       }
       if (!twsResult) {
-        problems.addProblem(filename, LintProblem.ErrorLevel.WARN,
-            this, "needTrailingWhiteSpace");
+        problems.addProblem(filename,
+            new LintProblem(ErrorLevel.WARN, this, "needTrailingWhiteSpace"));
       }
 
     } catch (IOException e) {

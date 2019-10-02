@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import com.github.imas.rdflint.validator.RdfValidator;
@@ -28,16 +29,14 @@ public class RdfSyntaxValidator extends AbstractRdfValidator {
     public void warning(String message, long line, long col) {
       this.problems.addProblem(
           this.filename,
-          LintProblem.ErrorLevel.WARN,
-          this.validator, "parseWarning", line, col, message);
+          new LintProblem(ErrorLevel.WARN, line, col, this.validator, "parseWarning", message));
     }
 
     @Override
     public void error(String message, long line, long col) {
       this.problems.addProblem(
           this.filename,
-          LintProblem.ErrorLevel.ERROR,
-          this.validator, "parseError", line, col, message);
+          new LintProblem(ErrorLevel.ERROR, line, col, this.validator, "parseError", message));
     }
 
     @Override

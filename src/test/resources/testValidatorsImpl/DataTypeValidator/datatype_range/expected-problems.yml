@@ -1,0 +1,4 @@
+datatype_range.rdf:
+  - key: com.github.imas.rdflint.validator.impl.predictedOutlier
+    subject: http://example.com/something10
+    predicate: http://schema.org/issueNumber
