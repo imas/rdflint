@@ -9,6 +9,8 @@
 
 rdflintのセットアップ手順を説明します。
 
+## マニュアルセットアップ
+
 1. rdflintの実行にはJavaの実行環境が必要です。ランタイムがインストールされていない場合は、以下のリンクからJREまたはJDKをダウンロードしてインストールして下さい。
 
    Java SE - Downloads | Oracle Technology Network | Oracle  
@@ -28,3 +30,25 @@ rdflintのセットアップ手順を説明します。
    ```
    $ java -jar rdflint-0.0.8-all.jar
    ```
+
+## Homebrewによるセットアップ (macOSのみ)
+
+1. Homebrewがインストールされていない場合は、以下のリンクを参照してインストールして下さい。
+
+   Homebrew
+   https://brew.sh/index_ja
+
+2. Homebrewが使えるようになったら、以下のコマンドでrdflintをインストールします。
+
+   ```
+   $ brew tap takemikami/takemikami
+   $ brew install rdflint
+   ```
+
+3. 以下のコマンドでrdflintを実行し、エラーが表示されなければ、準備完了です。
+
+   ```
+   $ rdflint
+   ```
+
+※Homebrewでインストールした場合、「使い方」で``java -jar rdflint-0.0.8-all.jar``と記載されている箇所は``rdflint``に読み替えて下さい。
