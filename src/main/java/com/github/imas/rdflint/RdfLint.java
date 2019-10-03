@@ -30,6 +30,8 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFParser;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -278,8 +280,28 @@ public class RdfLint {
         try {
           Query query = QueryFactory.create(line);
           QueryExecution qe = QueryExecutionFactory.create(query, m);
-          ResultSet results = qe.execSelect();
-          ResultSetFormatter.out(System.out, results, query);
+
+          switch (query.getQueryType()) {
+            case Query.QueryTypeSelect:
+              ResultSet results = qe.execSelect();
+              ResultSetFormatter.out(System.out, results, query);
+              break;
+            case Query.QueryTypeConstruct:
+              Model construct = qe.execConstruct();
+              RDFDataMgr.write(System.out, construct, RDFFormat.TURTLE_BLOCKS);
+              break;
+            case Query.QueryTypeDescribe:
+              Model describe = qe.execDescribe();
+              RDFDataMgr.write(System.out, describe, RDFFormat.TURTLE_BLOCKS);
+              break;
+            case Query.QueryTypeAsk:
+              boolean bool = qe.execAsk();
+              System.out.println(bool); // NOPMD
+              break;
+            default:
+              System.out.println("unknown query type."); // NOPMD
+              break;
+          }
         } catch (Exception ex) {
           ex.printStackTrace(); // NOPMD
         }
