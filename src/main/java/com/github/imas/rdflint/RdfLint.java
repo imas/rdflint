@@ -298,10 +298,8 @@ public class RdfLint {
               boolean bool = qe.execAsk();
               System.out.println(bool); // NOPMD
               break;
-            case Query.QueryTypeUnknown:
-              System.out.println("unknown query type."); // NOPMD
-              break;
             default:
+              System.out.println("unknown query type."); // NOPMD
               break;
           }
         } catch (Exception ex) {
