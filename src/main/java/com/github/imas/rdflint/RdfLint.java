@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -67,6 +68,7 @@ public class RdfLint {
     options.addOption("targetdir", true, "Target Directory Path");
     options.addOption("origindir", true, "Origin Dataset Directory Path");
     options.addOption("config", true, "Configuration file Path");
+    options.addOption("suppress", true, "Suppress problems file Path");
     options.addOption("i", false, "Interactive mode");
     options.addOption("h", false, "Print usage");
     options.addOption("vv", false, "Verbose logging (for debugging)");
@@ -87,13 +89,38 @@ public class RdfLint {
     }
 
     // Set parameter
-    String baseUri = cmd.getOptionValue("baseuri");
     String parentPath = cmd.getOptionValue("targetdir");
     if (parentPath == null) {
       parentPath = ".";
     }
-    String originPath = cmd.getOptionValue("origindir");
     String configPath = cmd.getOptionValue("config");
+    if (configPath == null) {
+      for (String fn : new String[]{
+          "rdflint-config.yml",
+          ".rdflint-config.yml",
+          ".circleci/rdflint-config.yml"}) {
+        Path path = Paths.get(parentPath + "/" + fn);
+        if (Files.exists(path)) {
+          configPath = path.toAbsolutePath().toString();
+          break;
+        }
+      }
+    }
+    String suppressPath = cmd.getOptionValue("suppress");
+    if (suppressPath == null) {
+      for (String fn : new String[]{
+          "rdflint-suppress.yml",
+          ".rdflint-suppress.yml",
+          ".circleci/rdflint-suppress.yml"}) {
+        Path path = Paths.get(parentPath + "/" + fn);
+        if (Files.exists(path)) {
+          suppressPath = path.toAbsolutePath().toString();
+          break;
+        }
+      }
+    }
+    String baseUri = cmd.getOptionValue("baseuri");
+    String originPath = cmd.getOptionValue("origindir");
 
     // Main procedure
     RdfLint lint = new RdfLint();
@@ -105,6 +132,9 @@ public class RdfLint {
     if (originPath != null) {
       params.setOriginDir(originPath);
     }
+    if (suppressPath != null) {
+      params.setSuppressPath(suppressPath);
+    }
 
     if (cmd.hasOption("i")) {
       // Execute Interactive mode
@@ -112,9 +142,13 @@ public class RdfLint {
     } else {
       // Execute linter
       LintProblemSet problems = lint.lintRdfDataSet(params, parentPath);
-      LintProblemFormatter.out(System.out, problems);
-      if (problems.hasError()) {
-        System.exit(1);
+      if (problems.hasProblem()) {
+        LintProblemFormatter.out(System.out, problems);
+        LintProblemFormatter
+            .yaml(Files.newOutputStream(Paths.get(parentPath + "/rdflint-problems.yml")), problems);
+        if (problems.hasError()) {
+          System.exit(1);
+        }
       }
     }
   }

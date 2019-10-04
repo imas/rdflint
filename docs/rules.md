@@ -9,6 +9,10 @@
 
 rdflintが提供する各検証ルールを紹介します。
 
+検証される具体的なケースは、以下のテストデータが参考になるかも知れません。
+[https://github.com/imas/rdflint/tree/master/src/test/resources/testValidatorsImpl](https://github.com/imas/rdflint/tree/master/src/test/resources/testValidatorsImpl)
+
+
 ## 文法検証
 
 rdfやturtleファイルの文法が正しいかを検証します。

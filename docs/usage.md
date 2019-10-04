@@ -147,6 +147,38 @@ CircleCIでの設定方法を例に、CIでrdflintを実行する手順を説明
    CircleCIを有効化すると、commitやpull request作成の度にrdflintが実行されます。
 
 
+## 不要な警告を無視する
+
+rdflintが出力する警告について、場合によっては修正が不要で無視したいケースがあります。  
+このような場合に、警告を出力しないように設定する方法を説明します。
+（rdflintには、統計的な値の偏りから正しくない値の疑いがあると判断するロジックも含まれています）
+
+事前に前項「rdflintの実行手順」を完了させておいて下さい。
+
+1. 対象のファイルを修正し、無視したい警告以外が無い状態にします。
+
+2. rdflintを実行します。   
+
+   ```
+   $ java -jar rdflint-0.0.8-all.jar -config rdflint-config.yml
+   ```
+
+   無視したい警告のみが表示されることを確認します。  
+   この時、出力された警告と同等の内容が、`rdflint-problems.yml`に出力されます。
+
+3. `rdflint-problems.yml`の内容を`rdflint-suppress.yml`にコピーします。
+
+   ```
+   $ cp rdflint-problems.yml rdflint-suppress.yml
+   ```
+
+4. 再度、rdflintを実行します。  
+   再度の実行時には、警告は出力されなくなります。  
+   ※カスタムクエリ検証など、データの位置を特定できない一部の警告は無視出来ません。
+
+※ 無視した警告を再度出力させたい場合は、`rdflint-suppress.yml`ファイルを削除します。
+
+
 ## コマンドラインオプション
 
 rdflintの実行時には以下のコマンドラインオプションを指定することが出来ます。
