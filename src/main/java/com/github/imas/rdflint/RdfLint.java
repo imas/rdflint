@@ -7,10 +7,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -51,6 +53,8 @@ import org.yaml.snakeyaml.Yaml;
 public class RdfLint {
 
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
+  private static ResourceBundle messages
+      = ResourceBundle.getBundle("com.github.imas.rdflint.messages");
 
   /**
    * rdflint entry point.
@@ -237,6 +241,14 @@ public class RdfLint {
         .parser(p)
         .build();
 
+    System.out.println(messages.getString("interactivemode.welcome"));// NOPMD
+
+    String helpMsg =
+        Arrays.stream(new String[]{"exit", "check", "reload", "help"})
+            .map(cmdString -> ":" + cmdString + " -- "
+                + messages.getString("interactivemode.help_desc." + cmdString))
+            .collect(Collectors.joining("\n"));
+
     while (true) {
       String line;
 
@@ -265,13 +277,11 @@ public class RdfLint {
             break;
 
           case "help":
-            System.out.println(":exit -- exit interactive mode."); // NOPMD
-            System.out.println(":check -- execute validation of rdflint."); // NOPMD
-            System.out.println(":reload -- reload rdf dataset."); // NOPMD
+            System.out.println(helpMsg); // NOPMD
             break;
 
           default:
-            System.out.println("unknown command."); // NOPMD
+            System.out.println(messages.getString("interactivemode.unknown_command"));// NOPMD
             break;
         }
 
@@ -299,11 +309,14 @@ public class RdfLint {
               System.out.println(bool); // NOPMD
               break;
             default:
-              System.out.println("unknown query type."); // NOPMD
+              System.out.println(messages.getString("interactivemode.unknown_querytype")); // NOPMD
               break;
           }
         } catch (Exception ex) {
-          ex.printStackTrace(); // NOPMD
+          System.out.println(ex.getLocalizedMessage()); // NOPMD
+          if (logger.isTraceEnabled()) {
+            ex.printStackTrace(); // NOPMD
+          }
         }
       }
 
