@@ -8,6 +8,7 @@ public class RdfLintParameters {
   private String targetDir;
   private String originDir;
   private String baseUri;
+  private String suppressPath;
   private List<CustomRule> rules;
   private List<GenerationRule> generation;
   private Map<String, Object> validation;
@@ -34,6 +35,14 @@ public class RdfLintParameters {
 
   public void setBaseUri(String baseUri) {
     this.baseUri = baseUri;
+  }
+
+  public String getSuppressPath() {
+    return suppressPath;
+  }
+
+  public void setSuppressPath(String suppressPath) {
+    this.suppressPath = suppressPath;
   }
 
   public List<GenerationRule> getGeneration() {
