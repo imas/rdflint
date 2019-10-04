@@ -1,0 +1,4 @@
+invalidconstraint.ttl:
+  - key: com.github.imas.rdflint.validator.impl.shaclViolation
+    predicate: http://xmlns.com/foaf/0.1/age
+    subject: http://example.com/something
