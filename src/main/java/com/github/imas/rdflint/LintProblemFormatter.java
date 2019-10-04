@@ -108,7 +108,7 @@ public class LintProblemFormatter {
             break;
         }
         Object[] args = LintProblemFormatter.buildArguments(m);
-        String msg = LintProblemFormatter.dumpMessage(m.getKey(), null, args);
+        String msg = LintProblemFormatter.dumpMessage(m.getKey(), Locale.ROOT, args);
         map.put("message", msg);
         lstmap.add(map);
       });
