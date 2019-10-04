@@ -1,0 +1,16 @@
+@base <http://example.com/rdflint#> .
+@prefix schema: <http://schema.org/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+<something>
+    a foaf:Person ;
+    schema:name "familyName" ;
+    foaf:age -1 .
+
+<personShape> a sh:NodeShape;
+    sh:targetClass foaf:Person;
+    sh:property [
+        sh:path foaf:age;
+        sh:minInclusive 0 ;
+    ];
