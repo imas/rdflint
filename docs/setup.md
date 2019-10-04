@@ -35,8 +35,8 @@ rdflintのセットアップ手順を説明します。
 
 1. Homebrewがインストールされていない場合は、以下のリンクを参照してインストールして下さい。
 
-   Homebrew
-   https://brew.sh/index_ja
+   Homebrew  
+   [https://brew.sh/index_ja](https://brew.sh/index_ja)
 
 2. Homebrewが使えるようになったら、以下のコマンドでrdflintをインストールします。
 
