@@ -89,10 +89,8 @@ public class RdfLint {
     }
 
     // Set parameter
-    String parentPath = cmd.getOptionValue("targetdir");
-    if (parentPath == null) {
-      parentPath = ".";
-    }
+    String targetDir = cmd.getOptionValue("targetdir");
+    String parentPath = targetDir != null ? targetDir : ".";
     String configPath = cmd.getOptionValue("config");
     if (configPath == null) {
       for (String fn : new String[]{
@@ -125,7 +123,11 @@ public class RdfLint {
     // Main procedure
     RdfLint lint = new RdfLint();
     RdfLintParameters params = lint.loadConfig(configPath);
-    params.setTargetDir(parentPath);
+    if (targetDir != null) {
+      params.setTargetDir(targetDir);
+    } else if (params.getTargetDir() == null) {
+      params.setTargetDir(".");
+    }
     if (baseUri != null) {
       params.setBaseUri(baseUri);
     }
@@ -138,10 +140,10 @@ public class RdfLint {
 
     if (cmd.hasOption("i")) {
       // Execute Interactive mode
-      lint.interactiveMode(params, parentPath);
+      lint.interactiveMode(params, params.getTargetDir());
     } else {
       // Execute linter
-      LintProblemSet problems = lint.lintRdfDataSet(params, parentPath);
+      LintProblemSet problems = lint.lintRdfDataSet(params, params.getTargetDir());
       if (problems.hasProblem()) {
         LintProblemFormatter.out(System.out, problems);
         LintProblemFormatter
