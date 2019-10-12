@@ -21,6 +21,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
@@ -53,6 +54,7 @@ import org.yaml.snakeyaml.Yaml;
 
 public class RdfLint {
 
+  private static final String Version = "0.0.9";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
   private static ResourceBundle messages
       = ResourceBundle.getBundle("com.github.imas.rdflint.messages");
@@ -71,10 +73,25 @@ public class RdfLint {
     options.addOption("suppress", true, "Suppress problems file Path");
     options.addOption("i", false, "Interactive mode");
     options.addOption("h", false, "Print usage");
+    options.addOption("v", false, "Print version");
     options.addOption("vv", false, "Verbose logging (for debugging)");
 
-    CommandLineParser parser = new DefaultParser();
-    CommandLine cmd = parser.parse(options, args);
+    CommandLine cmd = null;
+
+    try {
+      CommandLineParser parser = new DefaultParser();
+      cmd = parser.parse(options, args);
+    } catch (UnrecognizedOptionException e) {
+      System.out.println("Unrecognized option: " + e.getOption()); // NOPMD
+      System.exit(1);
+    }
+
+    // print version
+
+    if (cmd.hasOption("v")) {
+      System.out.println("rdflint " + Version); // NOPMD
+      return;
+    }
 
     // print usage
     if (cmd.hasOption("h")) {
