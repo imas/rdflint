@@ -6,6 +6,7 @@ import java.util.Map;
 public class RdfLintParameters {
 
   private String targetDir;
+  private String outputDir;
   private String originDir;
   private String baseUri;
   private String suppressPath;
@@ -19,6 +20,14 @@ public class RdfLintParameters {
 
   public void setTargetDir(String targetDir) {
     this.targetDir = targetDir;
+  }
+
+  public String getOutputDir() {
+    return outputDir;
+  }
+
+  public void setOutputDir(String outputDir) {
+    this.outputDir = outputDir;
   }
 
   public String getOriginDir() {

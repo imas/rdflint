@@ -68,6 +68,7 @@ public class RdfLint {
     Options options = new Options();
     options.addOption("baseuri", true, "RDF base URI");
     options.addOption("targetdir", true, "Target Directory Path");
+    options.addOption("outputdir", true, "Output Directory Path");
     options.addOption("origindir", true, "Origin Dataset Directory Path");
     options.addOption("config", true, "Configuration file Path");
     options.addOption("suppress", true, "Suppress problems file Path");
@@ -87,7 +88,6 @@ public class RdfLint {
     }
 
     // print version
-
     if (cmd.hasOption("v")) {
       System.out.println("rdflint " + Version); // NOPMD
       return;
@@ -134,23 +134,34 @@ public class RdfLint {
         }
       }
     }
-    String baseUri = cmd.getOptionValue("baseuri");
-    String originPath = cmd.getOptionValue("origindir");
 
     // Main procedure
     RdfLint lint = new RdfLint();
     RdfLintParameters params = lint.loadConfig(configPath);
+
     if (targetDir != null) {
       params.setTargetDir(targetDir);
     } else if (params.getTargetDir() == null) {
       params.setTargetDir(".");
     }
+
+    String outputDir = cmd.getOptionValue("outputdir");
+    if (outputDir != null) {
+      params.setOutputDir(outputDir);
+    } else if (params.getOutputDir() == null) {
+      params.setOutputDir(params.getTargetDir());
+    }
+
+    String baseUri = cmd.getOptionValue("baseuri");
     if (baseUri != null) {
       params.setBaseUri(baseUri);
     }
+
+    String originPath = cmd.getOptionValue("origindir");
     if (originPath != null) {
       params.setOriginDir(originPath);
     }
+
     if (suppressPath != null) {
       params.setSuppressPath(suppressPath);
     }
@@ -162,9 +173,9 @@ public class RdfLint {
       // Execute linter
       LintProblemSet problems = lint.lintRdfDataSet(params, params.getTargetDir());
       if (problems.hasProblem()) {
+        Path problemsPath = Paths.get(params.getOutputDir() + "/rdflint-problems.yml");
         LintProblemFormatter.out(System.out, problems);
-        LintProblemFormatter
-            .yaml(Files.newOutputStream(Paths.get(parentPath + "/rdflint-problems.yml")), problems);
+        LintProblemFormatter.yaml(Files.newOutputStream(problemsPath), problems);
         if (problems.hasError()) {
           System.exit(1);
         }
