@@ -38,6 +38,7 @@ public class ValidatorsTest {
         .filter(f -> f.toString().substring(rootPath.length()).split("/").length >= 2)
         .forEach(f -> {
           final String conf = f.toString() + "/rdflint-config.yml";
+          final String suppress = f.toString() + "/rdflint-suppress.yml";
           final String expect = f.toString() + "/expected-problems.yml";
           final String[] target = f.toString().substring(rootPath.length()).split("/");
           final String targetClass = target[0];
@@ -50,6 +51,9 @@ public class ValidatorsTest {
             // load rdflint-config.yml
             RdfLint rdflint = new RdfLint();
             RdfLintParameters params = rdflint.loadConfig(conf);
+            if (new File(suppress).exists()) {
+              params.setSuppressPath(suppress);
+            }
 
             // load expected-problems.yml
             @SuppressWarnings("unchecked")

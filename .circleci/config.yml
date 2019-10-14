@@ -13,7 +13,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            gradle build jacocoTestReport --stacktrace
+            gradle build --stacktrace
       - save_cache:
           paths:
             - "~/.ivy2/cache"

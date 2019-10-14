@@ -138,7 +138,7 @@ public class LintProblem {
       case LINE:
         return "line: " + this.line;
       case LINE_COL:
-        return "line: " + this.line + ", col" + this.col;
+        return "line: " + this.line + ", col: " + this.col;
       case TRIPLE:
         return "triple: " + this.triple.getSubject()
             + " - " + this.triple.getPredicate() + " - " + this.triple.getObject();

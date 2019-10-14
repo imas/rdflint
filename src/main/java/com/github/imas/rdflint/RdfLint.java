@@ -4,6 +4,8 @@ import com.github.imas.rdflint.config.RdfLintParameters;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +39,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.util.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jline.reader.EndOfFileException;
@@ -121,6 +124,30 @@ public class RdfLint {
         }
       }
     }
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint.loadConfig(configPath);
+    setupParameters(params, cmd, targetDir, parentPath);
+
+    // Main procedure
+    if (cmd.hasOption("i")) {
+      // Execute Interactive mode
+      lint.interactiveMode(params, params.getTargetDir());
+    } else {
+      // Execute linter
+      LintProblemSet problems = lint.lintRdfDataSet(params, params.getTargetDir());
+      if (problems.hasProblem()) {
+        Path problemsPath = Paths.get(params.getOutputDir() + "/rdflint-problems.yml");
+        LintProblemFormatter.out(System.out, problems);
+        LintProblemFormatter.yaml(Files.newOutputStream(problemsPath), problems);
+        if (problems.hasError()) {
+          System.exit(1);
+        }
+      }
+    }
+  }
+
+  static void setupParameters(
+      RdfLintParameters params, CommandLine cmd, String targetDir, String parentPath) {
     String suppressPath = cmd.getOptionValue("suppress");
     if (suppressPath == null) {
       for (String fn : new String[]{
@@ -134,10 +161,6 @@ public class RdfLint {
         }
       }
     }
-
-    // Main procedure
-    RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint.loadConfig(configPath);
 
     if (targetDir != null) {
       params.setTargetDir(targetDir);
@@ -164,22 +187,6 @@ public class RdfLint {
 
     if (suppressPath != null) {
       params.setSuppressPath(suppressPath);
-    }
-
-    if (cmd.hasOption("i")) {
-      // Execute Interactive mode
-      lint.interactiveMode(params, params.getTargetDir());
-    } else {
-      // Execute linter
-      LintProblemSet problems = lint.lintRdfDataSet(params, params.getTargetDir());
-      if (problems.hasProblem()) {
-        Path problemsPath = Paths.get(params.getOutputDir() + "/rdflint-problems.yml");
-        LintProblemFormatter.out(System.out, problems);
-        LintProblemFormatter.yaml(Files.newOutputStream(problemsPath), problems);
-        if (problems.hasError()) {
-          System.exit(1);
-        }
-      }
     }
   }
 
@@ -307,12 +314,6 @@ public class RdfLint {
 
     System.out.println(messages.getString("interactivemode.welcome"));// NOPMD
 
-    String helpMsg =
-        Arrays.stream(new String[]{"exit", "check", "reload", "help"})
-            .map(cmdString -> ":" + cmdString + " -- "
-                + messages.getString("interactivemode.help_desc." + cmdString))
-            .collect(Collectors.joining("\n"));
-
     while (true) {
       String line;
 
@@ -322,73 +323,91 @@ public class RdfLint {
         return;
       }
 
-      if (line.trim().charAt(0) == ':') {
-        // execute command
-        String cmd = line.trim().substring(1);
-        switch (cmd) {
-          case "exit":
-          case "quit":
-            return;
-
-          case "check":
-          case "lint":
-            LintProblemSet problems = this.lintRdfDataSet(params, parentPath);
-            LintProblemFormatter.out(System.out, problems);
-            break;
-
-          case "reload":
-            m = this.loadRdfSet(params, targetDir);
-            break;
-
-          case "help":
-            System.out.println(helpMsg); // NOPMD
-            break;
-
-          default:
-            System.out.println(messages.getString("interactivemode.unknown_command"));// NOPMD
-            break;
-        }
-
-      } else {
-        // execute query
-        try {
-          Query query = QueryFactory.create(line);
-          QueryExecution qe = QueryExecutionFactory.create(query, m);
-
-          switch (query.getQueryType()) {
-            case Query.QueryTypeSelect:
-              ResultSet results = qe.execSelect();
-              ResultSetFormatter.out(System.out, results, query);
-              break;
-            case Query.QueryTypeConstruct:
-              Model construct = qe.execConstruct();
-              RDFDataMgr.write(System.out, construct, RDFFormat.TURTLE_BLOCKS);
-              break;
-            case Query.QueryTypeDescribe:
-              Model describe = qe.execDescribe();
-              RDFDataMgr.write(System.out, describe, RDFFormat.TURTLE_BLOCKS);
-              break;
-            case Query.QueryTypeAsk:
-              boolean bool = qe.execAsk();
-              System.out.println(bool); // NOPMD
-              break;
-            default:
-              System.out.println(messages.getString("interactivemode.unknown_querytype")); // NOPMD
-              break;
-          }
-        } catch (Exception ex) {
-          System.out.println(ex.getLocalizedMessage()); // NOPMD
-          if (logger.isTraceEnabled()) {
-            ex.printStackTrace(); // NOPMD
-          }
-        }
+      if (!interactiveCommand(System.out, line, params, targetDir, parentPath, m)) {
+        return;
       }
-
     }
   }
 
+  boolean interactiveCommand(OutputStream out, String line,
+      RdfLintParameters params, String targetDir, String parentPath, Model m)
+      throws IOException {
+    PrintWriter pw = FileUtils.asPrintWriterUTF8(out);
+
+    if (line.trim().charAt(0) == ':') {
+      // execute command
+      String cmd = line.trim().substring(1);
+      switch (cmd) {
+        case "exit":
+        case "quit":
+          return false;
+
+        case "check":
+        case "lint":
+          LintProblemSet problems = this.lintRdfDataSet(params, parentPath);
+          LintProblemFormatter.out(out, problems);
+          break;
+
+        case "reload":
+          m.removeAll();
+          m.add(this.loadRdfSet(params, targetDir));
+          break;
+
+        case "help":
+          String helpMsg =
+              Arrays.stream(new String[]{"exit", "check", "reload", "help"})
+                  .map(cmdString -> ":" + cmdString + " -- "
+                      + messages.getString("interactivemode.help_desc." + cmdString))
+                  .collect(Collectors.joining("\n"));
+          pw.println(helpMsg);
+          break;
+
+        default:
+          pw.println(messages.getString("interactivemode.unknown_command"));
+          break;
+      }
+
+    } else {
+      // execute query
+      try {
+        Query query = QueryFactory.create(line);
+        QueryExecution qe = QueryExecutionFactory.create(query, m);
+
+        switch (query.getQueryType()) {
+          case Query.QueryTypeSelect:
+            ResultSet results = qe.execSelect();
+            ResultSetFormatter.out(out, results, query);
+            break;
+          case Query.QueryTypeConstruct:
+            Model construct = qe.execConstruct();
+            RDFDataMgr.write(out, construct, RDFFormat.TURTLE_BLOCKS);
+            break;
+          case Query.QueryTypeDescribe:
+            Model describe = qe.execDescribe();
+            RDFDataMgr.write(out, describe, RDFFormat.TURTLE_BLOCKS);
+            break;
+          case Query.QueryTypeAsk:
+            boolean bool = qe.execAsk();
+            pw.println(bool);
+            break;
+          default:
+            pw.println(messages.getString("interactivemode.unknown_querytype"));
+            break;
+        }
+      } catch (Exception ex) {
+        pw.println(ex.getLocalizedMessage());
+        if (logger.isTraceEnabled()) {
+          ex.printStackTrace(); // NOPMD
+        }
+      }
+    }
+
+    pw.flush();
+    return true;
+  }
+
   // create model from files (rdf, ttl)
-  private Model loadRdfSet(RdfLintParameters params, String targetDir) throws IOException {
+  Model loadRdfSet(RdfLintParameters params, String targetDir) throws IOException {
     String parentPath = new File(targetDir).getCanonicalPath();
     String baseUri = params.getBaseUri();
 
