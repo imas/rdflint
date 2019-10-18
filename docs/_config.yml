@@ -1,3 +1,4 @@
 theme: jekyll-theme-hacker
 title: "rdflint: RDF Linter"
 description: "RDFデータのチェックツール「rdflint」の利用ガイド"
+google_analytics: UA-150373815-1
