@@ -28,9 +28,17 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
   private Set<String> subjects;
   private Map<String, String> resourceMap;
 
+  /**
+   * default constructor.
+   */
   public UndefinedSubjectValidator() {
     this.resourceMap = new HashMap<>();
-    this.resourceMap.put("http://schema.org/", "schemaorg/3.4/all-layers.ttl");
+    this.resourceMap
+        .put("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf/org/w3/rdf-syntax-ns.ttl");
+    this.resourceMap.put("http://www.w3.org/2000/01/rdf-schema#", "rdf/org/w3/rdf-schema.ttl");
+    this.resourceMap.put("http://schema.org/", "rdf/org/schema/3.4/all-layers.ttl");
+    this.resourceMap.put("http://xmlns.com/foaf/0.1/", "rdf/com/xmlns/foaf/20140114.rdf");
+    this.resourceMap.put("http://purl.org/dc/elements/1.1/", "rdf/org/purl/dcelements.ttl");
   }
 
   @Override
@@ -49,7 +57,11 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
     this.resourceMap.forEach((prefix, resourceName) -> {
       InputStream is = ClassLoader.getSystemResourceAsStream(resourceName);
       Graph g = Factory.createGraphMem();
-      RDFParser.source(is).base(prefix).lang(Lang.TTL).parse(g);
+      if (resourceName.endsWith("ttl")) {
+        RDFParser.source(is).base(prefix).lang(Lang.TTL).parse(g);
+      } else {
+        RDFParser.source(is).base(prefix).lang(Lang.RDFXML).parse(g);
+      }
       Set<String> sets = g.find().toList().stream()
           .map(t -> t.getSubject().getURI())
           .collect(Collectors.toSet());
