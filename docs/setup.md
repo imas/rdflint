@@ -17,18 +17,18 @@ rdflintのセットアップ手順を説明します。
    [https://www.oracle.com/technetwork/java/javase/downloads/index.html](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
 2. Javaの実行環境が準備できたら、JitPackからrdflintをダウンロードします。  
-  ブラウザのアドレス欄に``https://jitpack.io/com/github/imas/rdflint/0.0.9/rdflint-0.0.9-all.jar``と記載してダウンロードします。  
+  ブラウザのアドレス欄に``https://jitpack.io/com/github/imas/rdflint/0.1.0/rdflint-0.1.0-all.jar``と記載してダウンロードします。  
   wgetコマンドが使える環境であれば、以下のようにダウンロードしても構いません。
 
    ```
-   $ wget https://jitpack.io/com/github/imas/rdflint/0.0.9/rdflint-0.0.9-all.jar
+   $ wget https://jitpack.io/com/github/imas/rdflint/0.1.0/rdflint-0.1.0-all.jar
    ```
 
 3. rdflintをダウンロードしたディレクトリに移動し、以下のコマンドでrdflintを実行します。  
    エラーが表示されなければ、準備完了です。
 
    ```
-   $ java -jar rdflint-0.0.9-all.jar
+   $ java -jar rdflint-0.1.0-all.jar
    ```
 
 ## Homebrewによるセットアップ (macOSのみ)
@@ -51,4 +51,4 @@ rdflintのセットアップ手順を説明します。
    $ rdflint
    ```
 
-※Homebrewでインストールした場合、「使い方」で``java -jar rdflint-0.0.9-all.jar``と記載されている箇所は``rdflint``に読み替えて下さい。
+※Homebrewでインストールした場合、「使い方」で``java -jar rdflint-0.1.0-all.jar``と記載されている箇所は``rdflint``に読み替えて下さい。

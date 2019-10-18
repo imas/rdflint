@@ -22,7 +22,7 @@ import org.yaml.snakeyaml.Yaml;
 
 public class RdfLint {
 
-  private static final String Version = "0.0.9";
+  private static final String Version = "0.1.0";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
 
   /**
