@@ -4,19 +4,10 @@ import com.github.imas.rdflint.config.RdfLintParameters;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -24,34 +15,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
-import org.apache.jena.graph.Factory;
-import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.query.ResultSetFormatter;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RDFParser;
-import org.apache.jena.util.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.Parser;
-import org.jline.reader.UserInterruptException;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.templateresolver.FileTemplateResolver;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -59,8 +24,6 @@ public class RdfLint {
 
   private static final String Version = "0.0.9";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
-  private static ResourceBundle messages
-      = ResourceBundle.getBundle("com.github.imas.rdflint.messages");
 
   /**
    * rdflint entry point.
@@ -131,7 +94,8 @@ public class RdfLint {
     // Main procedure
     if (cmd.hasOption("i")) {
       // Execute Interactive mode
-      lint.interactiveMode(params, params.getTargetDir());
+      InteractiveMode imode = new InteractiveMode();
+      imode.execute(params, params.getTargetDir());
     } else {
       // Execute linter
       LintProblemSet problems = lint.lintRdfDataSet(params, params.getTargetDir());
@@ -213,7 +177,8 @@ public class RdfLint {
     logger.trace("lintRdfDataSet: in");
 
     // execute generator
-    generateRdfDataSet(params, targetDir);
+    GenerationRunner grunner = new GenerationRunner();
+    grunner.execute(params, targetDir);
 
     // call validator runner
     ValidationRunner runner = new ValidationRunner();
@@ -221,209 +186,4 @@ public class RdfLint {
     return runner.execute(params, targetDir);
   }
 
-
-  /**
-   * rdflint generation process.
-   */
-  void generateRdfDataSet(RdfLintParameters params, String targetDir)
-      throws IOException {
-    if (params.getGeneration() == null) {
-      return;
-    }
-
-    // clear output
-    long errSize = params.getGeneration().stream().map(g -> {
-      File f = new File(targetDir + "/" + g.getOutput());
-      if (!f.exists()) {
-        return true;
-      }
-      return f.delete();
-    }).filter(v -> !v).count();
-    if (errSize > 0) {
-      throw new IOException("rdflint generation, fail to clear existed output.");
-    }
-
-    // prepare thymeleaf template engine
-    FileTemplateResolver templateResolver = new FileTemplateResolver();
-    templateResolver.setTemplateMode("TEXT");
-    templateResolver.setPrefix(targetDir + "/");
-    TemplateEngine templateEngine = new TemplateEngine();
-    templateEngine.setTemplateResolver(templateResolver);
-
-    // prepare rdf dataset
-    Model m = this.loadRdfSet(params, targetDir);
-
-    params.getGeneration().forEach(g -> {
-      String q = g.getQuery();
-
-      try {
-        // execute query and build result set
-        Query query = QueryFactory.create(q);
-        QueryExecution qe = QueryExecutionFactory.create(query, m);
-        ResultSet results = qe.execSelect();
-
-        List<Map<String, String>> lst = new LinkedList<>();
-        List<String> cols = new LinkedList<>();
-        while (results.hasNext()) {
-          QuerySolution sol = results.next();
-          Iterator<String> it = sol.varNames();
-          cols.clear();
-          while (it.hasNext()) {
-            cols.add(it.next());
-          }
-          lst.add(cols.stream()
-              .collect(Collectors.toMap(
-                  c -> c,
-                  c -> sol.get(c).toString()
-              )));
-        }
-
-        // apply template
-        Context ctx = new Context();
-        ctx.setVariable("params", params);
-        ctx.setVariable("rs", lst);
-        templateEngine.process(
-            g.getTemplate(),
-            ctx,
-            Files.newBufferedWriter(Paths.get(targetDir + "/" + g.getOutput()))
-        );
-
-      } catch (Exception ex) {
-        ex.printStackTrace(); // NOPMD
-      }
-    });
-  }
-
-  /**
-   * execute interacitve mode.
-   */
-  void interactiveMode(RdfLintParameters params, String targetDir) throws IOException {
-    // load rdf
-    String parentPath = new File(targetDir).getCanonicalPath();
-    Model m = this.loadRdfSet(params, targetDir);
-
-    // initialize jline
-    Terminal terminal = TerminalBuilder.builder()
-        .system(true)
-        .build();
-    Parser p = new InteractiveParser();
-    LineReader lineReader = LineReaderBuilder.builder()
-        .terminal(terminal)
-        .parser(p)
-        .build();
-
-    System.out.println(messages.getString("interactivemode.welcome"));// NOPMD
-
-    while (true) {
-      String line;
-
-      try {
-        line = lineReader.readLine("SPARQL> ");
-      } catch (UserInterruptException | EndOfFileException e) {
-        return;
-      }
-
-      if (!interactiveCommand(System.out, line, params, targetDir, parentPath, m)) {
-        return;
-      }
-    }
-  }
-
-  boolean interactiveCommand(OutputStream out, String line,
-      RdfLintParameters params, String targetDir, String parentPath, Model m)
-      throws IOException {
-    PrintWriter pw = FileUtils.asPrintWriterUTF8(out);
-
-    if (line.trim().charAt(0) == ':') {
-      // execute command
-      String cmd = line.trim().substring(1);
-      switch (cmd) {
-        case "exit":
-        case "quit":
-          return false;
-
-        case "check":
-        case "lint":
-          LintProblemSet problems = this.lintRdfDataSet(params, parentPath);
-          LintProblemFormatter.out(out, problems);
-          break;
-
-        case "reload":
-          m.removeAll();
-          m.add(this.loadRdfSet(params, targetDir));
-          break;
-
-        case "help":
-          String helpMsg =
-              Arrays.stream(new String[]{"exit", "check", "reload", "help"})
-                  .map(cmdString -> ":" + cmdString + " -- "
-                      + messages.getString("interactivemode.help_desc." + cmdString))
-                  .collect(Collectors.joining("\n"));
-          pw.println(helpMsg);
-          break;
-
-        default:
-          pw.println(messages.getString("interactivemode.unknown_command"));
-          break;
-      }
-
-    } else {
-      // execute query
-      try {
-        Query query = QueryFactory.create(line);
-        QueryExecution qe = QueryExecutionFactory.create(query, m);
-
-        switch (query.getQueryType()) {
-          case Query.QueryTypeSelect:
-            ResultSet results = qe.execSelect();
-            ResultSetFormatter.out(out, results, query);
-            break;
-          case Query.QueryTypeConstruct:
-            Model construct = qe.execConstruct();
-            RDFDataMgr.write(out, construct, RDFFormat.TURTLE_BLOCKS);
-            break;
-          case Query.QueryTypeDescribe:
-            Model describe = qe.execDescribe();
-            RDFDataMgr.write(out, describe, RDFFormat.TURTLE_BLOCKS);
-            break;
-          case Query.QueryTypeAsk:
-            boolean bool = qe.execAsk();
-            pw.println(bool);
-            break;
-          default:
-            pw.println(messages.getString("interactivemode.unknown_querytype"));
-            break;
-        }
-      } catch (Exception ex) {
-        pw.println(ex.getLocalizedMessage());
-        if (logger.isTraceEnabled()) {
-          ex.printStackTrace(); // NOPMD
-        }
-      }
-    }
-
-    pw.flush();
-    return true;
-  }
-
-  // create model from files (rdf, ttl)
-  Model loadRdfSet(RdfLintParameters params, String targetDir) throws IOException {
-    String parentPath = new File(targetDir).getCanonicalPath();
-    String baseUri = params.getBaseUri();
-
-    Graph g = Factory.createGraphMem();
-    Files.walk(Paths.get(parentPath))
-        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
-        .forEach(e -> {
-          Graph gf = Factory.createGraphMem();
-          String filename = e.toString().substring(parentPath.length() + 1);
-          String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
-          RDFParser.source(e.toString()).base(baseUri + subdir).parse(gf);
-          List<Triple> lst = gf.find().toList();
-          gf.close();
-          lst.forEach(g::add);
-        });
-
-    return ModelFactory.createModelForGraph(g);
-  }
 }
