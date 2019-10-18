@@ -32,3 +32,5 @@ rdflintの開発に参加、カスタマイズ開発をおこなう方向けの�
 
 5. カスタマイズをrdflint本体に取り込みたい場合は、GitHubでPullRequestを作成して下さい。  
    取り込まれたカスタマイズは、[MITライセンス](https://github.com/imas/rdflint/blob/master/LICENSE)での公開になります。
+
+{{site.cookie_consent}}

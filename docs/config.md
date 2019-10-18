@@ -117,3 +117,5 @@ generation配下に、以下のkey-valueを持つマップのリストを指定�
 - query: 実行するSPARQLクエリ
 - template: クエリ結果を流し込むthymeleafテンプレートのパス
 - output: 出力ファイルのパス
+
+{{site.cookie_consent}}
