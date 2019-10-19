@@ -22,7 +22,7 @@ import org.yaml.snakeyaml.Yaml;
 
 public class RdfLint {
 
-  private static final String Version = "0.1.0";
+  public static final String VERSION = "0.1.0";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
 
   /**
@@ -55,7 +55,7 @@ public class RdfLint {
 
     // print version
     if (cmd.hasOption("v")) {
-      System.out.println("rdflint " + Version); // NOPMD
+      System.out.println("rdflint " + VERSION); // NOPMD
       return;
     }
 

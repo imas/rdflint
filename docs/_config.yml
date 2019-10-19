@@ -1,4 +1,27 @@
 theme: jekyll-theme-hacker
 title: "rdflint: RDF Linter"
 description: "RDFデータのチェックツール「rdflint」の利用ガイド"
+lang: ja-JP
 google_analytics: UA-150373815-1
+RDFLINT_VERSION: 0.1.0
+cookie_consent: |
+  <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
+  <script>
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": {
+        "background": "#1d8a8a"
+      },
+      "button": {
+        "background": "#62ffaa"
+      }
+    },
+    "position": "bottom-right",
+    "content": {
+      "message": "当Webサイトでは、rdflint及びサイトの改善のためにクッキーを利用します.",
+      "dismiss": "了解",
+      "link": "個人情報ポリシー",
+      "href": "https://imas.github.io/rdflint/privacy.html"
+    }
+  });
+  </script>
