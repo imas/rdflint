@@ -4,6 +4,7 @@ import com.github.imas.rdflint.config.RdfLintParameters;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -56,7 +57,9 @@ public class InteractiveMode {
         .parser(new InteractiveParser())
         .build();
 
-    System.out.println(messages.getString("interactivemode.welcome"));// NOPMD
+    String welcome = MessageFormat
+        .format(messages.getString("interactivemode.welcome"), RdfLint.VERSION);
+    System.out.println(welcome);// NOPMD
 
     while (true) {
       String line;
