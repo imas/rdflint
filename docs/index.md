@@ -44,6 +44,8 @@ rdflintを導入しているプロジェクトを紹介します。
   [https://prismdb.takanakahiko.me/](https://prismdb.takanakahiko.me/)
 - Cashless_Sparql  
   [https://github.com/crssnky/Cashless_Sparql](https://github.com/crssnky/Cashless_Sparql)
+- ☆ピコピコプラネット☆  
+  [https://mltd.pikopikopla.net/](https://mltd.pikopikopla.net/)
 
 ## 本利用ガイドについて
 
