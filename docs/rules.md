@@ -76,7 +76,7 @@ SPARQLを利用したカスタムクエリによるデータ整合を検証し�
 Shapes Constraint Language (SHACL)によって指定された制約に違反していないかを検証します。
 
 Shapes Constraint Language (SHACL) | W3C  
-https://www.w3.org/TR/shacl/
+[https://www.w3.org/TR/shacl/](https://www.w3.org/TR/shacl/)
 
 ## 文字列トリム検証
 
