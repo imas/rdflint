@@ -44,18 +44,19 @@ public class ShaclValidator extends AbstractRdfValidator {
     tripeSet.forEach(triple -> {
       final List<Node> matchedResults = result
           .find(Node.ANY, rdfNode("type"), shaclNode("ValidationResult"))
-          .mapWith(t -> t.getSubject())
+          .mapWith(Triple::getSubject)
           .filterKeep(s -> result.contains(s, shaclNode("focusNode"), triple.getSubject()))
           .filterKeep(s -> result.contains(s, shaclNode("resultPath"), triple.getPredicate()))
+          .filterKeep(s -> result.contains(s, shaclNode("value"), triple.getObject()))
           .toList();
 
       matchedResults.forEach(res -> {
         final Node detail = result
             .find(res, shaclNode("resultMessage"), Node.ANY)
-            .toList().get(0).getObject();
+            .next().getObject(); // ValidationResult has only one resultMessage
         final Node constraint = result
             .find(res, shaclNode("sourceConstraintComponent"), Node.ANY)
-            .toList().get(0).getObject();
+            .next().getObject(); // ValidationResult has only one sourceConstraintComponent
         result.remove(res, Node.ANY, Node.ANY);
         final String msg = buildReportMessage(triple, constraint, detail);
         problems.addProblem(file,
