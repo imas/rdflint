@@ -31,6 +31,9 @@ public class DatasetLoader {
           List<Triple> lst = gf.find().toList();
           gf.close();
           lst.forEach(g::add);
+
+          gf.getPrefixMapping().getNsPrefixMap()
+              .forEach((k, v) -> g.getPrefixMapping().setNsPrefix(k, v));
         });
 
     return ModelFactory.createModelForGraph(g);

@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,7 +55,7 @@ public class InteractiveMode {
         .build();
     LineReader lineReader = LineReaderBuilder.builder()
         .terminal(terminal)
-        .completer(new InteractiveCompleter())
+        .completer(new InteractiveCompleter(m))
         .parser(new InteractiveParser())
         .build();
 
@@ -235,15 +237,12 @@ public class InteractiveMode {
         "true",
         "false"
     };
-    private static final String[] PREFIX_MAP = {
-        "rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
-        "rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-        "xsd: <http://www.w3.org/2001/XMLSchema#>",
-        "fn: <http://www.w3.org/2005/xpath-functions#>",
-        "schema: <http://schema.org/>",
-        "foaf: <http://xmlns.com/foaf/0.1/>",
-        "dc: <http://purl.org/dc/elements/1.1/>",
-    };
+    Model model;
+
+    public InteractiveCompleter(Model model) {
+      super();
+      this.model = model;
+    }
 
     @Override
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
@@ -258,21 +257,23 @@ public class InteractiveMode {
       }
 
       // prefix completer
+      Map<String, String> prefixMap = this.model.getNsPrefixMap();
       int idxBefore1 = line.words().size() - 2;
       int idxBefore2 = line.words().size() - 3;
       if (idxBefore1 >= 0 && "PREFIX".equals(line.words().get(idxBefore1).toUpperCase())) {
-        Stream.of(PREFIX_MAP)
-            .map(s -> s.split(" ")[0])
+        prefixMap.keySet().stream()
             .filter(s -> s.startsWith(line.word()))
-            .forEach(s -> candidates.add(new Candidate(s)));
+            .sorted()
+            .forEach(s -> candidates.add(new Candidate(s + ":")));
         return;
       }
       if (idxBefore2 >= 0 && "PREFIX".equals(line.words().get(idxBefore2).toUpperCase())) {
         String alias = line.words().get(idxBefore1);
-        Stream.of(PREFIX_MAP)
-            .filter(s -> s.split(" ")[0].equals(alias))
-            .map(s -> s.split(" ")[1])
-            .forEach(s -> candidates.add(new Candidate(s)));
+
+        prefixMap.entrySet().stream()
+            .filter(e -> alias.equals(e.getKey() + ":"))
+            .map(Entry::getValue)
+            .forEach(s -> candidates.add(new Candidate("<" + s + ">")));
         return;
       }
 
