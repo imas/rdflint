@@ -6,6 +6,7 @@ import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -44,20 +45,21 @@ public class ShaclValidator extends AbstractRdfValidator {
     tripeSet.forEach(triple -> {
       final List<Node> matchedResults = result
           .find(Node.ANY, rdfNode("type"), shaclNode("ValidationResult"))
-          .mapWith(t -> t.getSubject())
+          .mapWith(Triple::getSubject)
           .filterKeep(s -> result.contains(s, shaclNode("focusNode"), triple.getSubject()))
           .filterKeep(s -> result.contains(s, shaclNode("resultPath"), triple.getPredicate()))
+          .filterKeep(s -> result.contains(s, shaclNode("value"), triple.getObject()))
           .toList();
 
       matchedResults.forEach(res -> {
         final Node detail = result
             .find(res, shaclNode("resultMessage"), Node.ANY)
-            .toList().get(0).getObject();
+            .next().getObject(); // ValidationResult has only one resultMessage
         final Node constraint = result
             .find(res, shaclNode("sourceConstraintComponent"), Node.ANY)
-            .toList().get(0).getObject();
+            .next().getObject(); // ValidationResult has only one sourceConstraintComponent
         result.remove(res, Node.ANY, Node.ANY);
-        final String msg = buildReportMessage(triple, constraint, detail);
+        final String msg = buildReportMessage(constraint, detail);
         problems.addProblem(file,
             new LintProblem(ErrorLevel.WARN, triple, this, "shaclViolation", msg));
       });
@@ -69,38 +71,45 @@ public class ShaclValidator extends AbstractRdfValidator {
     result.find(Node.ANY, rdfNode("type"), shaclNode("ValidationResult"))
         .mapWith(t -> t.getSubject())
         .forEachRemaining(s -> {
-          final Node subject = result
+          final Optional<Node> subject = result
               .find(s, shaclNode("focusNode"), Node.ANY)
-              .toList().get(0).getObject();
-          final Node predicate = result
+              .nextOptional().map(Triple::getObject);
+          final Optional<Node> predicate = result
               .find(s, shaclNode("resultPath"), Node.ANY)
-              .toList().get(0).getObject();
+              .nextOptional().map(Triple::getObject);
+          final Optional<Node> object = result
+              .find(s, shaclNode("value"), Node.ANY)
+              .nextOptional().map(Triple::getObject);
           final Node detail = result
               .find(s, shaclNode("resultMessage"), Node.ANY)
-              .toList().get(0).getObject();
+              .next().getObject(); // ValidationResult has only one resultMessage
           final Node constraint = result
               .find(s, shaclNode("sourceConstraintComponent"), Node.ANY)
-              .toList().get(0).getObject();
-          final String msg = buildReportMessage(subject, predicate, detail, constraint);
+              .next().getObject(); // ValidationResult has only one sourceConstraintComponent
+          final String msg = buildReportMessage(subject, predicate, object, constraint, detail);
           problems.addProblem("SHACL_Additional_Check",
-              new LintProblem(ErrorLevel.WARN, subject, this, "shaclViolation", msg));
+              new LintProblem(ErrorLevel.WARN, this, "shaclViolation", msg));
         });
   }
 
-  private String buildReportMessage(Triple triple, Node constraint, Node detail) {
+  private String buildReportMessage(Node constraint, Node detail) {
     final StringBuilder builder = new StringBuilder();
-    return builder.append("(" + triple + ") ")
+    return builder
         .append(detail + " ")
         .append("(" + constraint + ")")
         .toString();
   }
 
-  private String buildReportMessage(Node subject, Node predicate, Node detail, Node constraint) {
+  private String buildReportMessage(Optional<Node> subject, Optional<Node> predicate,
+      Optional<Node> object, Node constraint, Node detail) {
+    final String subjectStr = subject.map(Node::toString).orElse("???");
+    final String predicateStr = predicate.map(Node::toString).orElse("???");
+    final String objectStr = object.map(Node::toString).orElse("???");
     final StringBuilder builder = new StringBuilder();
     return builder
-        .append("(" + subject + " @" + predicate + " <???>) ")
         .append(detail + " ")
         .append("(" + constraint + ")")
+        .append("(triple: " + subjectStr + " - " + predicateStr + " - " + objectStr + ")")
         .toString();
   }
 }

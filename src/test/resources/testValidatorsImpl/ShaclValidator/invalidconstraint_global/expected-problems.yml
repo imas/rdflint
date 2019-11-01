@@ -1,3 +1,2 @@
 SHACL_Additional_Check:
   - key: com.github.imas.rdflint.validator.impl.shaclViolation
-    subject: http://example.com/something
