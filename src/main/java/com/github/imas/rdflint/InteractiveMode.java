@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -262,7 +263,7 @@ public class InteractiveMode {
       int idxBefore2 = line.words().size() - 3;
       if (idxBefore1 >= 0 && "PREFIX".equals(line.words().get(idxBefore1).toUpperCase())) {
         prefixMap.keySet().stream()
-            .filter(s -> s.startsWith(line.word()))
+            .filter(s -> (s + ":").startsWith(line.word()))
             .sorted()
             .forEach(s -> candidates.add(new Candidate(s + ":")));
         return;
@@ -281,6 +282,19 @@ public class InteractiveMode {
       Stream.of(SPARQL_KEYWORDS)
           .filter(s -> s.toUpperCase().startsWith(line.word().toUpperCase()))
           .forEach(s -> candidates.add(new Candidate(s)));
+
+      // prefix completion in query
+      List<String> activePrefixList = new LinkedList<>();
+      for (int i = 1; i < line.words().size(); i++) {
+        if ("PREFIX".equals(line.words().get(i - 1).toUpperCase())) {
+          activePrefixList.add(line.words().get(i));
+        }
+      }
+      candidates.addAll(
+          activePrefixList.stream()
+              .map(s -> new Candidate(s, s, null, null, null, null, false))
+              .collect(Collectors.toList())
+      );
     }
   }
 
