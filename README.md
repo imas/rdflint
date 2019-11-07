@@ -121,6 +121,12 @@ $ java -jar rdflint-0.1.0-all.jar -targetdir example/dataset -origindir example/
 And check subject and triple, removed from origindir. Its problem report as INFO level.
 
 
+### SHACL constraint validation
+
+write your SHACL constraint in `.ttl` or `.rdf` file.
+and put this file in directory which specified by `-targetdir`.
+
+
 ### RDF generation
 
 Write configuration file like a following.
