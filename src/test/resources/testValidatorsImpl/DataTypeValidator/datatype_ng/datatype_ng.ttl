@@ -1,0 +1,102 @@
+BASE <http://example.com/rdflint#>
+PREFIX schema: <http://schema.org/>
+
+<something01>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something02>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something03>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something04>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something05>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something06>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something07>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something08>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something09>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something10>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something11>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something12>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something13>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something14>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something15>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something16>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something17>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something18>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something19>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1 ;
+ schema:height 160.0 .
+
+<something20>
+ schema:familyName: 'familyName' ;
+ schema:issueNumber 1.1 ;
+ schema:height 160.5 .

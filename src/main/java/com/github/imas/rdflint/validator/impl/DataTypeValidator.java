@@ -40,7 +40,7 @@ public class DataTypeValidator extends AbstractRdfValidator {
     predicates.forEach(p -> {
       List<DataType> datatypes = triples.stream()
           .filter(t -> t.getPredicate().getURI().equals(p))
-          .map(t -> DataTypeUtils.guessDataType(t.getObject().getLiteralValue().toString()))
+          .map(t -> DataTypeUtils.guessDataType(t.getObject().getLiteralLexicalForm()))
           .collect(Collectors.toList());
 
       long cntNatural = 0;
@@ -96,9 +96,9 @@ public class DataTypeValidator extends AbstractRdfValidator {
           List<Double> valueList = tripeSet.stream()
               .filter(t -> t.getPredicate().getURI().equals(pred))
               .filter(t -> DataTypeUtils.isDataType(
-                  DataTypeUtils.guessDataType(t.getObject().getLiteralValue().toString()),
+                  DataTypeUtils.guessDataType(t.getObject().getLiteralLexicalForm()),
                   DataType.FLOAT))
-              .map(t -> Double.parseDouble(t.getObject().getLiteralValue().toString()))
+              .map(t -> Double.parseDouble(t.getObject().getLiteralLexicalForm()))
               .collect(Collectors.toList());
           double[] values = new double[valueList.size()];
           for (int i = 0; i < valueList.size(); i++) {
