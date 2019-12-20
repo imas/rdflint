@@ -13,7 +13,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            gradle build --stacktrace
+            ./gradlew build --stacktrace
       - save_cache:
           paths:
             - "~/.ivy2/cache"
