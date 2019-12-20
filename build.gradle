@@ -6,7 +6,7 @@ plugins {
     id 'pmd'
     id 'jacoco'
     id 'com.github.johnrengelman.shadow' version '4.0.3'
-    id "com.github.spotbugs" version "1.6.9"
+    id "com.github.spotbugs" version "3.0.0"
 }
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
