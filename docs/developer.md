@@ -27,7 +27,7 @@ rdflintの開発に参加、カスタマイズ開発をおこなう方向けの�
 4. ビルドしたrdflintは、``example/dataset``配下にテスト用データが入っているので、次のように実行を試すことが出来ます。
 
    ```
-   $ java -jar build/libs/rdflint-all.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
+   $ java -jar build/libs/rdflint.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
    ```
 
 5. カスタマイズをrdflint本体に取り込みたい場合は、GitHubでPullRequestを作成して下さい。  

@@ -35,10 +35,10 @@ rdflintの基本的な実行手順を説明します。ここでは、rdfファ�
    baseUriには、対象リソースURIのベース階層を指定します。
 
 3. rdflintを実行します。   
-   ここでは、``target.rdf``と``rdflint-config.yml``、及び``rdflint-{{site.RDFLINT_VERSION}}-all.jar``を置いたディレクトリに移動して、次のコマンドを実行します。
+   ここでは、``target.rdf``と``rdflint-config.yml``、及び``rdflint-{{site.RDFLINT_VERSION}}.jar``を置いたディレクトリに移動して、次のコマンドを実行します。
 
    ```
-   $ java -jar rdflint-{{site.RDFLINT_VERSION}}-all.jar -config rdflint-config.yml
+   $ java -jar rdflint-{{site.RDFLINT_VERSION}}.jar -config rdflint-config.yml
    ```
 
    rdfファイルが正しく無いため、検証に失敗し、次のように表示されます。
@@ -72,10 +72,10 @@ rdflintでSAPRQLクエリのテスト実行を行う手順を説明します。
    ```
 
 2. インタラクティブモードでrdflintを実行します。   
-   ここでは、``target.rdf``と``rdflint-config.yml``、及び``rdflint-{{site.RDFLINT_VERSION}}-all.jar``を置いたディレクトリに移動して、次のコマンドを実行します。
+   ここでは、``target.rdf``と``rdflint-config.yml``、及び``rdflint-{{site.RDFLINT_VERSION}}.jar``を置いたディレクトリに移動して、次のコマンドを実行します。
 
    ```
-   $ java -jar rdflint-{{site.RDFLINT_VERSION}}-all.jar -config rdflint-config.yml -i
+   $ java -jar rdflint-{{site.RDFLINT_VERSION}}.jar -config rdflint-config.yml -i
    ```
 
    ``-i``がインタラクティブモードで実行するオプションです。
@@ -139,8 +139,8 @@ CircleCIでの設定方法を例に、CIでrdflintを実行する手順を説明
            name: run rdflint
            command: |
              RDFLINT_VERSION={{site.RDFLINT_VERSION}}
-             wget https://jitpack.io/com/github/imas/rdflint/$RDFLINT_VERSION/rdflint-$RDFLINT_VERSION-all.jar
-             java -jar rdflint-$RDFLINT_VERSION-all.jar -config .circleci/config.yml
+             wget https://jitpack.io/com/github/imas/rdflint/$RDFLINT_VERSION/rdflint-$RDFLINT_VERSION.jar
+             java -jar rdflint-$RDFLINT_VERSION.jar -config .circleci/config.yml
    ```
 
 3. 上記の２ファイルの追加をgit管理下に追加し、GitHubにpushします。  
@@ -160,7 +160,7 @@ rdflintが出力する警告について、場合によっては修正が不要�
 2. rdflintを実行します。   
 
    ```
-   $ java -jar rdflint-{{site.RDFLINT_VERSION}}-all.jar -config rdflint-config.yml
+   $ java -jar rdflint-{{site.RDFLINT_VERSION}}.jar -config rdflint-config.yml
    ```
 
    無視したい警告のみが表示されることを確認します。  
