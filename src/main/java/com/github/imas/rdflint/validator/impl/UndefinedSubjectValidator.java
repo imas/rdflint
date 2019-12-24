@@ -43,10 +43,6 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
 
   @Override
   public void prepareValidationResource(Map<String, List<Triple>> fileTripleSet) {
-    if (this.getParameters().getBaseUri() == null) {
-      return;
-    }
-
     // prepare subject-set of self-resource
     this.subjects = fileTripleSet.values().stream().flatMap(Collection::stream)
         .filter(t -> t.getSubject().isURI())
@@ -69,7 +65,9 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
     });
 
     Set<String> prefixSet = new HashSet<>();
-    prefixSet.add(this.getParameters().getBaseUri());
+    if (this.getParameters().getBaseUri() != null) {
+      prefixSet.add(this.getParameters().getBaseUri());
+    }
     prefixSet.addAll(this.resourceMap.keySet());
     this.prefixes = prefixSet.stream().toArray(String[]::new);
   }
@@ -85,9 +83,6 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
   public void validateTripleSet(LintProblemSet problems, String file, List<Triple> tripeSet) {
     if (logger.isTraceEnabled()) {
       logger.trace("validateTripleSet: in (file=" + file + ")");
-    }
-    if (this.getParameters().getBaseUri() == null) {
-      return;
     }
     tripeSet.forEach(t -> {
       for (Node n : new Node[]{t.getPredicate(), t.getObject()}) {
