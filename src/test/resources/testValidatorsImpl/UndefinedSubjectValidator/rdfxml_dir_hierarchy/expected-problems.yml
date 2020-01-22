@@ -1,0 +1,3 @@
+RDFs/undefinedsubject.rdf:
+  - key: com.github.imas.rdflint.validator.impl.undefinedUri
+    node: http://example.com/RDFs/someclass

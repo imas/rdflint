@@ -1,4 +1,0 @@
-undefinedsubject.rdf:
-  - key: com.github.imas.rdflint.validator.impl.undefinedUri
-    subject: http://example.com/something
-    predicate: http://www.w3.org/1999/02/22-rdf-syntax-ns#type

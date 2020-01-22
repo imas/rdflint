@@ -1,6 +1,9 @@
 package com.github.imas.rdflint;
 
 import com.github.imas.rdflint.config.RdfLintParameters;
+import com.github.imas.rdflint.parser.RdflintParser;
+import com.github.imas.rdflint.parser.RdflintParserRdfxml;
+import com.github.imas.rdflint.parser.RdflintParserTurtle;
 import com.github.imas.rdflint.validator.RdfValidator;
 import java.io.File;
 import java.io.IOException;
@@ -85,9 +88,34 @@ public class ValidationRunner {
     Map<String, List<Triple>> originFileTripleSet = originPath != null
         ? loadFileTripleSet(originPath, baseUri) : new ConcurrentHashMap<>();
 
-    // validation: validateTripleSet
+    // setup triple set to validator
     validators.forEach(v -> {
       v.prepareValidationResource(fileTripleSet);
+    });
+    // validate triple, node
+    Files.walk(Paths.get(parentPath))
+        .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
+        .forEach(f -> {
+          String filename = f.toString().substring(parentPath.length() + 1);
+          String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+          String subBase = baseUri + subdir;
+          RdflintParser parser =
+              f.toString().endsWith(".ttl") ? new RdflintParserTurtle()
+                  : new RdflintParserRdfxml(subBase);
+          validators.forEach(parser::addRdfValidator);
+          try {
+            String sourceText = Files.lines(f, StandardCharsets.UTF_8)
+                .collect(Collectors.joining(System.getProperty("line.separator")));
+            List<LintProblem> fileProblems = parser.parse(sourceText);
+            String file = f.toString().substring(parentPath.length() + 1);
+            fileProblems.forEach(p -> problems.addProblem(file, p));
+          } catch (IOException ex) {
+            ex.printStackTrace(); // NOPMD
+          }
+        });
+
+    // validation: validateTripleSet
+    validators.forEach(v -> {
       fileTripleSet.forEach((f, l) -> v.validateTripleSet(problems, f, l));
       originFileTripleSet.forEach((f, l) -> v.validateOriginTripleSet(problems, f, l));
       v.reportAdditionalProblem(problems);
@@ -146,38 +174,37 @@ public class ValidationRunner {
           filtered.addProblem(f, m);
         } else {
           boolean filter = filterList.stream().anyMatch(fm -> {
-            if (m.getKey().equals(fm.get("key"))
-                && m.getLocType().toString().equals(fm.get("locationType"))) {
-              switch (m.getLocType()) {
-                case LINE:
-                  if (m.getLine() == Integer.parseInt(fm.get("line").toString())) {
-                    return true;
-                  }
-                  break;
-                case LINE_COL:
-                  if (m.getLine() == Integer.parseInt(fm.get("line").toString())
-                      && m.getCol() == Integer.parseInt(fm.get("column").toString())) {
-                    return true;
-                  }
-                  break;
-                case SUBJECT:
-                  if (m.getSubject().toString().equals(fm.get("subject").toString())) {
-                    return true;
-                  }
-                  break;
-                case TRIPLE:
-                  if (
-                      m.getTriple().getSubject().toString().equals(fm.get("subject").toString())
-                          && m.getTriple().getPredicate().toString()
-                          .equals(fm.get("predicate").toString())
-                          && m.getTriple().getObject().toString()
-                          .equals(fm.get("object").toString())
-                  ) {
-                    return true;
-                  }
-                  break;
-                default:
-                  break;
+            if (m.getKey().equals(fm.get("key"))) {
+              if (m.getLocation() != null) {
+                if (m.getLocation().getTriple() != null
+                    && m.getLocation().getTriple().getSubject().toString()
+                    .equals(fm.get("subject").toString())
+                    && m.getLocation().getTriple().getPredicate().toString()
+                    .equals(fm.get("predicate").toString())
+                    && m.getLocation().getTriple().getObject().toString()
+                    .equals(fm.get("object").toString())
+                ) {
+                  return true;
+                }
+                if (m.getLocation().getNode() != null
+                    && fm.get("node") != null
+                    && m.getLocation().getNode().toString().equals(fm.get("node").toString())) {
+                  return true;
+                }
+                if (m.getLocation().getBeginCol() > 0
+                    && fm.get("line") != null
+                    && fm.get("col") != null
+                    && m.getLocation().getBeginLine() == Integer.parseInt(fm.get("line").toString())
+                    && m.getLocation().getBeginCol() == Integer
+                    .parseInt(fm.get("col").toString())) {
+                  return true;
+                }
+                if (m.getLocation().getBeginLine() > 0
+                    && fm.get("line") != null
+                    && m.getLocation().getBeginLine() == Integer
+                    .parseInt(fm.get("line").toString())) {
+                  return true;
+                }
               }
             }
             return false;

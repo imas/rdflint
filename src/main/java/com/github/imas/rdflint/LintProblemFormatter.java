@@ -87,26 +87,22 @@ public class LintProblemFormatter {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put("key", m.getKey());
         map.put("level", m.getLevel().toString());
-        map.put("locationType", m.getLocType().toString());
-        switch (m.getLocType()) {
-          case LINE:
-            map.put("line", String.valueOf(m.getLine()));
-            break;
-          case LINE_COL:
-            map.put("line", String.valueOf(m.getLine()));
-            map.put("column", String.valueOf(m.getCol()));
-            break;
-          case SUBJECT:
-            map.put("subject", m.getSubject().toString());
-            break;
-          case TRIPLE:
-            map.put("subject", m.getTriple().getSubject().toString());
-            map.put("predicate", m.getTriple().getPredicate().toString());
-            map.put("object", m.getTriple().getObject().toString());
-            break;
-          default:
-            break;
+        if (m.getLocation() != null) {
+          if (m.getLocation().getBeginLine() >= 0) {
+            map.put("line", String.valueOf(m.getLocation().getBeginLine()));
+          }
+          if (m.getLocation().getBeginCol() >= 0) {
+            map.put("column", String.valueOf(m.getLocation().getBeginCol()));
+          }
+          if (m.getLocation().getTriple() != null) {
+            map.put("subject", m.getLocation().getTriple().getSubject().toString());
+            map.put("predicate", m.getLocation().getTriple().getPredicate().toString());
+            map.put("object", m.getLocation().getTriple().getObject().toString());
+          } else if (m.getLocation().getNode() != null) {
+            map.put("node", m.getLocation().getNode().toString());
+          }
         }
+
         Object[] args = LintProblemFormatter.buildArguments(m);
         String msg = LintProblemFormatter.dumpMessage(m.getKey(), Locale.ROOT, args);
         map.put("message", msg);

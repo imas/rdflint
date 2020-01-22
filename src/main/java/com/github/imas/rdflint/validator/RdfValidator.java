@@ -1,9 +1,11 @@
 package com.github.imas.rdflint.validator;
 
+import com.github.imas.rdflint.LintProblem;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.config.RdfLintParameters;
 import java.util.List;
 import java.util.Map;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
 public interface RdfValidator {
@@ -21,5 +23,11 @@ public interface RdfValidator {
   void reportAdditionalProblem(LintProblemSet problems);
 
   void close();
+
+  LintProblem validateTriple(Node subject, Node predicate, Node object,
+      int beginLine, int beginCol, int endLine, int endCol);
+
+  LintProblem validateNode(Node node,
+      int beginLine, int beginCol, int endLine, int endCol);
 
 }

@@ -54,7 +54,8 @@ public class DegradeValidator extends AbstractRdfValidator {
         .forEach(s -> {
           if (!this.subjectSet.contains(s)) {
             problems.addProblem(file,
-                new LintProblem(ErrorLevel.INFO, this, "removedSubject", s));
+                new LintProblem(ErrorLevel.INFO, this, null,
+                    "removedSubject", s));
           }
         });
 
@@ -65,7 +66,7 @@ public class DegradeValidator extends AbstractRdfValidator {
           if (!this.flatTripleSet.contains(t)
               && this.subjectSet.contains(t.getSubject().toString())) {
             problems.addProblem(file,
-                new LintProblem(ErrorLevel.INFO, this, "removedTriple", t)); //NOPMD
+                new LintProblem(ErrorLevel.INFO, this, null, "removedTriple", t)); //NOPMD
           }
         }
       }
