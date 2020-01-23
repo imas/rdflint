@@ -1,5 +1,3 @@
 undefinedsubject.rdf:
   - key: com.github.imas.rdflint.validator.impl.undefinedUri
-    level: WARN
-    locationType: SUBJECT
     node: http://example.com/rdflint#someclass

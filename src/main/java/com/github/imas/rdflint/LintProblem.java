@@ -1,8 +1,8 @@
 package com.github.imas.rdflint;
 
 import com.github.imas.rdflint.validator.RdfValidator;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
+import java.util.LinkedList;
+import java.util.List;
 
 public class LintProblem {
 
@@ -10,69 +10,33 @@ public class LintProblem {
     ERROR, WARN, INFO
   }
 
-  public enum LocationType {
-    GLOBAL, LINE, LINE_COL, TRIPLE, SUBJECT
-  }
-
   private ErrorLevel level;
   private String key;
-  private LocationType locType;
-  private long line;
-  private long col;
-  private Triple triple;
-  private Node subject;
+  private LintProblemLocation location;
   private Object[] arguments;
 
   /**
-   * constructor for global location type.
+   * constructor.
    */
-  public LintProblem(ErrorLevel level, RdfValidator validator, String key, Object... arguments) {
-    String pkgName = validator.getClass().getPackage().getName();
-    this.locType = LocationType.GLOBAL;
+  public LintProblem(ErrorLevel level, RdfValidator validator, LintProblemLocation location,
+      String key, Object... arguments) {
+    String pkgName = "";
+    if (validator != null) {
+      pkgName = validator.getClass().getPackage().getName();
+    }
+    this.location = location;
     this.level = level;
     this.key = pkgName + "." + key;
     this.arguments = arguments.clone();
   }
 
-  /**
-   * constructor for line location type.
-   */
-  public LintProblem(ErrorLevel level, long line,
-      RdfValidator validator, String key, Object... arguments) {
-    this(level, validator, key, arguments);
-    this.locType = LocationType.LINE;
-    this.line = line;
+  // location
+  public LintProblemLocation getLocation() {
+    return location;
   }
 
-  /**
-   * constructor for line & column location type.
-   */
-  public LintProblem(ErrorLevel level, long line, long col,
-      RdfValidator validator, String key, Object... arguments) {
-    this(level, validator, key, arguments);
-    this.locType = LocationType.LINE_COL;
-    this.line = line;
-    this.col = col;
-  }
-
-  /**
-   * constructor for triple location type.
-   */
-  public LintProblem(ErrorLevel level, Triple triple,
-      RdfValidator validator, String key, Object... arguments) {
-    this(level, validator, key, arguments);
-    this.locType = LocationType.TRIPLE;
-    this.triple = triple;
-  }
-
-  /**
-   * constructor for subject location type.
-   */
-  public LintProblem(ErrorLevel level, Node subject,
-      RdfValidator validator, String key, Object... arguments) {
-    this(level, validator, key, arguments);
-    this.locType = LocationType.SUBJECT;
-    this.subject = subject;
+  public void setLocation(LintProblemLocation location) {
+    this.location = location;
   }
 
   // level
@@ -93,59 +57,29 @@ public class LintProblem {
     this.key = key;
   }
 
-  // location
-  public LocationType getLocType() {
-    return locType;
-  }
-
-  public long getLine() {
-    return this.line;
-  }
-
-  public void setLine(long line) {
-    this.line = line;
-  }
-
-  public long getCol() {
-    return this.col;
-  }
-
-  public void setCol(long col) {
-    this.col = col;
-  }
-
-  public Triple getTriple() {
-    return this.triple;
-  }
-
-  public void setTriple(Triple triple) {
-    this.triple = triple;
-  }
-
-  public Node getSubject() {
-    return this.subject;
-  }
-
-  public void setSubject(Node subject) {
-    this.subject = subject;
-  }
-
   /**
    * return human readable location string.
    */
   public String getLocationString() {
-    switch (this.locType) {
-      case LINE:
-        return "line: " + this.line;
-      case LINE_COL:
-        return "line: " + this.line + ", col: " + this.col;
-      case TRIPLE:
-        return "triple: " + this.triple.getSubject()
-            + " - " + this.triple.getPredicate() + " - " + this.triple.getObject();
-      case SUBJECT:
-        return "subject: " + this.subject.toString();
-      default:
-        break;
+    if (this.location == null) {
+      return null;
+    }
+    List<String> infoList = new LinkedList<>();
+    if (this.location.getBeginLine() >= 0) {
+      infoList.add(String.format("line: %d", this.location.getBeginLine()));
+    }
+    if (this.location.getBeginCol() >= 0) {
+      infoList.add(String.format("col: %d", this.location.getBeginCol()));
+    }
+    if (this.location.getTriple() != null) {
+      infoList.add("triple: " + this.location.getTriple().getSubject().toString()
+          + " - " + this.location.getTriple().getPredicate().toString()
+          + " - " + this.location.getTriple().getObject().toString());
+    } else if (this.location.getNode() != null) {
+      infoList.add("node: " + this.location.getNode().toString());
+    }
+    if (!infoList.isEmpty()) {
+      return String.join(", ", infoList);
     }
     return null;
   }

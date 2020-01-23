@@ -1,11 +1,13 @@
 package com.github.imas.rdflint.validator;
 
+import com.github.imas.rdflint.LintProblem;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.config.RdfLintParameters;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
 public class AbstractRdfValidator implements RdfValidator {
@@ -103,4 +105,17 @@ public class AbstractRdfValidator implements RdfValidator {
   @Override
   public void close() {
   }
+
+  @Override
+  public LintProblem validateTriple(Node subject, Node predicate, Node object,
+      int beginLine, int beginCol, int endLine, int endCol) {
+    return null;
+  }
+
+  @Override
+  public LintProblem validateNode(Node node,
+      int beginLine, int beginCol, int endLine, int endCol) {
+    return null;
+  }
+
 }

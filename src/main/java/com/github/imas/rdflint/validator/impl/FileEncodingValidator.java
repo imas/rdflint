@@ -108,7 +108,7 @@ public class FileEncodingValidator extends AbstractRdfValidator {
 
       if (encoding != null && charset != null && !charset.equals(encoding)) {
         problems.addProblem(filename,
-            new LintProblem(ErrorLevel.WARN, this, "invalidEncoding", charset, encoding));
+            new LintProblem(ErrorLevel.WARN, this, null, "invalidEncoding", charset, encoding));
       }
     } catch (IOException e) {
       e.printStackTrace(); //NOPMD
@@ -175,19 +175,23 @@ public class FileEncodingValidator extends AbstractRdfValidator {
 
       if (!eolResult) {
         problems.addProblem(filename,
-            new LintProblem(ErrorLevel.WARN, this, "invalidEol", eol));
+            new LintProblem(ErrorLevel.WARN, this, null,
+                "invalidEol", eol));
       }
       if (newline && !fnlResult && (encoding == null || "UTF-8".equals(encoding))) {
         problems.addProblem(filename,
-            new LintProblem(ErrorLevel.WARN, this, "needFinalNewLine"));
+            new LintProblem(ErrorLevel.WARN, this, null,
+                "needFinalNewLine"));
       }
       if (indentStyle != IndentStyle.NONE && !indResult) {
         problems.addProblem(filename,
-            new LintProblem(ErrorLevel.WARN, this, "invalidIndentSize", indentSize, indentStyle));
+            new LintProblem(ErrorLevel.WARN, this, null,
+                "invalidIndentSize", indentSize, indentStyle));
       }
       if (!twsResult) {
         problems.addProblem(filename,
-            new LintProblem(ErrorLevel.WARN, this, "needTrailingWhiteSpace"));
+            new LintProblem(ErrorLevel.WARN, this, null,
+                "needTrailingWhiteSpace"));
       }
 
     } catch (IOException e) {

@@ -2,6 +2,7 @@ package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
 import com.github.imas.rdflint.LintProblem.ErrorLevel;
+import com.github.imas.rdflint.LintProblemLocation;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.utils.DataTypeUtils;
 import com.github.imas.rdflint.utils.DataTypeUtils.DataType;
@@ -121,8 +122,9 @@ public class DataTypeValidator extends AbstractRdfValidator {
       if (!DataTypeUtils.isDataType(dataType, guessedType)) {
         problems.addProblem(
             file,
-            new LintProblem(ErrorLevel.INFO, t,
-                this, "notmatchedGuessedDataType", guessedType, dataType));
+            new LintProblem(ErrorLevel.INFO, this,
+                new LintProblemLocation(t),
+                "notmatchedGuessedDataType", guessedType, dataType));
       }
 
       // check data type by language
@@ -130,8 +132,9 @@ public class DataTypeValidator extends AbstractRdfValidator {
       if (!DataTypeUtils.isLang(value, litLang)) {
         problems.addProblem(
             file,
-            new LintProblem(ErrorLevel.INFO, t,
-                this, "notmatchedLanguageType", litLang, value));
+            new LintProblem(ErrorLevel.INFO, this,
+                new LintProblemLocation(t),
+                "notmatchedLanguageType", litLang, value));
       }
 
       double[] ngValues = dataNgValues.get(t.getPredicate().getURI());
@@ -147,7 +150,9 @@ public class DataTypeValidator extends AbstractRdfValidator {
           if (match) {
             problems.addProblem(
                 file,
-                new LintProblem(ErrorLevel.INFO, t, this, "predictedOutlier", val));
+                new LintProblem(ErrorLevel.INFO, this,
+                    new LintProblemLocation(t),
+                    "predictedOutlier", val));
           }
         } catch (NumberFormatException ex) {
           // Invalid Number Format

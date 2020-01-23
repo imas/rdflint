@@ -2,6 +2,7 @@ package com.github.imas.rdflint.validator.impl;
 
 import com.github.imas.rdflint.LintProblem;
 import com.github.imas.rdflint.LintProblem.ErrorLevel;
+import com.github.imas.rdflint.LintProblemLocation;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.util.List;
@@ -41,32 +42,6 @@ public class ShaclValidator extends AbstractRdfValidator {
   }
 
   @Override
-  public void validateTripleSet(LintProblemSet problems, String file, List<Triple> tripeSet) {
-    tripeSet.forEach(triple -> {
-      final List<Node> matchedResults = result
-          .find(Node.ANY, rdfNode("type"), shaclNode("ValidationResult"))
-          .mapWith(Triple::getSubject)
-          .filterKeep(s -> result.contains(s, shaclNode("focusNode"), triple.getSubject()))
-          .filterKeep(s -> result.contains(s, shaclNode("resultPath"), triple.getPredicate()))
-          .filterKeep(s -> result.contains(s, shaclNode("value"), triple.getObject()))
-          .toList();
-
-      matchedResults.forEach(res -> {
-        final Node detail = result
-            .find(res, shaclNode("resultMessage"), Node.ANY)
-            .next().getObject(); // ValidationResult has only one resultMessage
-        final Node constraint = result
-            .find(res, shaclNode("sourceConstraintComponent"), Node.ANY)
-            .next().getObject(); // ValidationResult has only one sourceConstraintComponent
-        result.remove(res, Node.ANY, Node.ANY);
-        final String msg = buildReportMessage(constraint, detail);
-        problems.addProblem(file,
-            new LintProblem(ErrorLevel.WARN, triple, this, "shaclViolation", msg));
-      });
-    });
-  }
-
-  @Override
   public void reportAdditionalProblem(LintProblemSet problems) {
     result.find(Node.ANY, rdfNode("type"), shaclNode("ValidationResult"))
         .mapWith(t -> t.getSubject())
@@ -88,7 +63,7 @@ public class ShaclValidator extends AbstractRdfValidator {
               .next().getObject(); // ValidationResult has only one sourceConstraintComponent
           final String msg = buildReportMessage(subject, predicate, object, constraint, detail);
           problems.addProblem("SHACL_Additional_Check",
-              new LintProblem(ErrorLevel.WARN, this, "shaclViolation", msg));
+              new LintProblem(ErrorLevel.WARN, this, null, "shaclViolation", msg));
         });
   }
 
@@ -112,4 +87,39 @@ public class ShaclValidator extends AbstractRdfValidator {
         .append("(triple: " + subjectStr + " - " + predicateStr + " - " + objectStr + ")")
         .toString();
   }
+
+  @Override
+  public LintProblem validateTriple(Node subject, Node predicate, Node object,
+      int beginLine, int beginCol, int endLine, int endCol) {
+    final List<Node> matchedResults = result
+        .find(Node.ANY, rdfNode("type"), shaclNode("ValidationResult"))
+        .mapWith(Triple::getSubject)
+        .filterKeep(s -> result.contains(s, shaclNode("focusNode"), subject))
+        .filterKeep(s -> result.contains(s, shaclNode("resultPath"), predicate))
+        .filterKeep(s -> result.contains(s, shaclNode("value"), object))
+        .toList();
+
+    StringBuilder buff = new StringBuilder();
+    matchedResults.forEach(res -> {
+      final Node detail = result
+          .find(res, shaclNode("resultMessage"), Node.ANY)
+          .next().getObject(); // ValidationResult has only one resultMessage
+      final Node constraint = result
+          .find(res, shaclNode("sourceConstraintComponent"), Node.ANY)
+          .next().getObject(); // ValidationResult has only one sourceConstraintComponent
+      result.remove(res, Node.ANY, Node.ANY);
+      final String msg = buildReportMessage(constraint, detail);
+      buff.append(msg);
+    });
+
+    if (buff.length() > 0) {
+      return new LintProblem(ErrorLevel.WARN,
+          this,
+          new LintProblemLocation(beginLine, beginCol, endLine, endCol,
+              new Triple(subject, predicate, object)),
+          "shaclViolation", buff.toString());
+    }
+    return null;
+  }
+
 }

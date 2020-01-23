@@ -20,11 +20,13 @@ public class LintProblemFormatterTest {
 
     ConcreteRdfValidator validator = new ConcreteRdfValidator();
     set.addProblem("file1",
-        new LintProblem(ErrorLevel.WARN, validator, "key_global", "global arg"));
+        new LintProblem(ErrorLevel.WARN, validator, null, "key_global", "global arg"));
     set.addProblem("file1",
-        new LintProblem(ErrorLevel.WARN, 1, validator, "key_line", "line arg"));
+        new LintProblem(ErrorLevel.WARN, validator, new LintProblemLocation(1), "key_line",
+            "line arg"));
     set.addProblem("file1",
-        new LintProblem(ErrorLevel.WARN, 2, 4, validator, "key_linecol", "linecol arg"));
+        new LintProblem(ErrorLevel.WARN, validator, new LintProblemLocation(2, 4), "key_linecol",
+            "linecol arg"));
 
     ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
     LintProblemFormatter.out(byteOut, set);

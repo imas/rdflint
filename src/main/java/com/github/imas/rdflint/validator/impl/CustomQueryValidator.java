@@ -77,7 +77,7 @@ public class CustomQueryValidator extends AbstractRdfValidator {
 
     private void log(ErrorLevel lv, String msg) {
       set.addProblem(this.file,
-          new LintProblem(lv, this.validator, "customError", name + ": " + msg));
+          new LintProblem(lv, this.validator, null, "customError", name + ": " + msg));
     }
 
   }
