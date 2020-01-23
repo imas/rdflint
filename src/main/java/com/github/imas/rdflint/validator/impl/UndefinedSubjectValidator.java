@@ -61,19 +61,16 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
 
   @Override
   public void prepareValidationResource(Map<String, List<Triple>> fileTripleSet) {
-    logger.trace("setupTripleSet: in");
-
-    List<Triple> tripeSet = fileTripleSet.values().stream().flatMap(Collection::stream)
-        .filter(t -> t.getObject().isLiteral())
-        .collect(Collectors.toList());
+    logger.trace("prepareValidationResource: in");
 
     this.baseUri = this.getParameters().getBaseUri();
-    this.subjects = tripeSet.stream()
+    this.subjects = fileTripleSet.values().stream()
+        .flatMap(Collection::stream)
         .filter(t -> t.getSubject().isURI())
         .map(t -> t.getSubject().getURI())
         .collect(Collectors.toSet());
 
-    logger.trace("setupTripleSet: out");
+    logger.trace("prepareValidationResource: out");
   }
 
   @Override
