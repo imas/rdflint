@@ -63,7 +63,8 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
    */
   public static String convertUri2FilePath(String uri) {
     String fileSeparator = File.separatorChar == '\\' ? "\\\\" : File.separator;
-    String fullPathEncoded = uri.substring("file://".length());
+    String prefix = File.separatorChar == '\\' ? "file:///" : "file://";
+    String fullPathEncoded = uri.substring(prefix.length());
     String fullPath = Arrays.stream(fullPathEncoded.split("/")).map(raw -> {
       String decoded = raw;
       try {
