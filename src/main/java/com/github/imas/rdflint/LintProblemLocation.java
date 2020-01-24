@@ -118,7 +118,7 @@ public class LintProblemLocation {
     this.beginCol = beginCol;
   }
 
-  public long getEndLineLine() {
+  public long getEndLine() {
     return endLine;
   }
 

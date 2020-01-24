@@ -17,6 +17,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.launch.LSPLauncher;
+import org.eclipse.lsp4j.services.LanguageClient;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -39,6 +42,7 @@ public class RdfLint {
     options.addOption("config", true, "Configuration file Path");
     options.addOption("suppress", true, "Suppress problems file Path");
     options.addOption("i", false, "Interactive mode");
+    options.addOption("ls", false, "Language Server mode (experimental)");
     options.addOption("h", false, "Print usage");
     options.addOption("v", false, "Print version");
     options.addOption("vv", false, "Verbose logging (for debugging)");
@@ -69,6 +73,17 @@ public class RdfLint {
     // verbose logging mode
     if (cmd.hasOption("vv")) {
       Logger.getLogger("com.github.imas.rdflint").setLevel(Level.TRACE);
+    }
+
+    // Execute Language Server Mode
+    if (cmd.hasOption("ls")) {
+      RdfLintLanguageServer server = new RdfLintLanguageServer();
+      Launcher<LanguageClient> launcher = LSPLauncher
+          .createServerLauncher(server, System.in, System.out);
+      LanguageClient client = launcher.getRemoteProxy();
+      server.connect(client);
+      launcher.startListening();
+      return;
     }
 
     // Set parameter
