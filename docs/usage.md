@@ -32,7 +32,7 @@ rdflintの基本的な実行手順を説明します。ここでは、rdfファ�
    baseUri: https://example.com/targetrdf/
    ```
 
-   baseUriには、対象リソースURIのベース階層を指定します。
+   baseUriには、対象データセットURIのベース階層を指定します。
 
 3. rdflintを実行します。   
    ここでは、``target.rdf``と``rdflint-config.yml``、及び``rdflint-{{site.RDFLINT_VERSION}}.jar``を置いたディレクトリに移動して、次のコマンドを実行します。
@@ -183,7 +183,7 @@ rdflintが出力する警告について、場合によっては修正が不要�
 
 rdflintの実行時には以下のコマンドラインオプションを指定することが出来ます。
 
-- baseuri: 対象リソースURIのベース階層
+- baseuri: 対象データセットURIのベース階層
 - targetdir: 対象ディレクトリのパス
   指定しない場合は、カレントディレクトリを対象とする
 - origindir: デグレード検証時の比較対象ディレクトリのパス

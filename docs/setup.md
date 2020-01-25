@@ -41,8 +41,15 @@ rdflintのセットアップ手順を説明します。
 2. Homebrewが使えるようになったら、以下のコマンドでrdflintをインストールします。
 
    ```
-   $ brew tap takemikami/takemikami
+   $ brew tap imas/rdflint
    $ brew install rdflint
+   ```
+
+   ※0.1.1以前に ``takemikami/takemikami`` からインストールしていた方は、以下の手順でHomebrewの参照先を変更してください。
+
+   ```
+   $ brew untap takemikami/takemikami
+   $ brew tap imas/rdflint
    ```
 
 3. 以下のコマンドでrdflintを実行し、エラーが表示されなければ、準備完了です。
