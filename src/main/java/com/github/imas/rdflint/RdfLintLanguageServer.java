@@ -1,5 +1,6 @@
 package com.github.imas.rdflint;
 
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.config.RdfLintParameters;
 import com.github.imas.rdflint.parser.RdflintParser;
 import com.github.imas.rdflint.parser.RdflintParserRdfxml;
@@ -33,7 +34,10 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.system.ErrorHandler;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
@@ -139,6 +143,18 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
       rdflintParams = lint.loadConfig(configPath);
       rdflintParams.setTargetDir(rootPath);
       rdflintParams.setOutputDir(rootPath);
+      if (rdflintParams.getSuppressPath() == null) {
+        for (String fn : new String[]{
+            "rdflint-suppress.yml",
+            ".rdflint-suppress.yml",
+            ".circleci/rdflint-suppress.yml"}) {
+          Path path = Paths.get(rootPath + "/" + fn);
+          if (Files.exists(path)) {
+            rdflintParams.setSuppressPath(path.toAbsolutePath().toString());
+            break;
+          }
+        }
+      }
     } catch (IOException ex) {
       showException("Error cannot initialize rdflint", ex);
     }
@@ -149,6 +165,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     validators.forEach(v ->
         v.setParameters(rdflintParams)
     );
+    refreshFileTripleSet();
 
     ServerCapabilities capabilities = new ServerCapabilities();
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
@@ -175,12 +192,77 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     return this;
   }
 
-  void diagnostics() {
+  private DiagnosticSeverity convertLintProblemLevel2DiagnosticSeverity(ErrorLevel lv) {
+    DiagnosticSeverity severity;
+    switch (lv) {
+      case ERROR:
+        severity = DiagnosticSeverity.Error;
+        break;
+      case WARN:
+        severity = DiagnosticSeverity.Warning;
+        break;
+      default:
+        severity = DiagnosticSeverity.Information;
+    }
+    return severity;
+  }
+
+  private List<Diagnostic> convertLintProblem2DiagnosticList(List<LintProblem> problems) {
+    return problems.stream()
+        .map(p -> new Diagnostic(
+            new Range(
+                new Position((int) p.getLocation().getBeginLine() - 1,
+                    (int) p.getLocation().getBeginCol() - 1),
+                new Position((int) p.getLocation().getEndLine() - 1,
+                    (int) p.getLocation().getEndCol() - 1)),
+            LintProblemFormatter
+                .dumpMessage(p.getKey(), null, LintProblemFormatter.buildArguments(p)),
+            convertLintProblemLevel2DiagnosticSeverity(p.getLevel()),
+            "rdflint")
+        ).collect(Collectors.toList());
+  }
+
+  Map<String, List<Triple>> fileTripleSet;
+
+  static class MyErrorHandler implements ErrorHandler {
+
+    List<LintProblem> problems;
+
+    public MyErrorHandler(List<LintProblem> problems) {
+      this.problems = problems;
+    }
+
+    private void addDiagnostic(String message, long line, long col, ErrorLevel lv) {
+      problems.add(new LintProblem(
+          lv,
+          null,
+          new LintProblemLocation(line, 1, line, col),
+          null,
+          message));
+    }
+
+    @Override
+    public void warning(String message, long line, long col) {
+      addDiagnostic(message, line, col, ErrorLevel.WARN);
+    }
+
+    @Override
+    public void error(String message, long line, long col) {
+      addDiagnostic(message, line, col, ErrorLevel.ERROR);
+    }
+
+    @Override
+    public void fatal(String message, long line, long col) {
+      addDiagnostic(message, line, col, ErrorLevel.ERROR);
+    }
+  }
+
+  void refreshFileTripleSet() {
     try {
       // load triple
       String parentPath = rdflintParams.getTargetDir();
       String baseUri = rdflintParams.getBaseUri();
-      Map<String, List<Triple>> fileTripleSet = Files // NOPMD
+      fileTripleSet = Files // NOPMD
           .walk(Paths.get(parentPath))
           .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
           .collect(Collectors.toConcurrentMap(
@@ -191,49 +273,128 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
                 String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
                 Lang lang = e.toString().endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
                 String text = sourceTextMap.get(convertFilePath2Uri(e.toString()));
-                if (text != null) {
-                  InputStream prepareIn = new ByteArrayInputStream(
-                      text.getBytes(StandardCharsets.UTF_8));
-                  RDFParser.source(prepareIn).lang(lang).base(baseUri + subdir).parse(g);
-                } else {
-                  RDFParser.source(e.toString()).lang(lang).base(baseUri + subdir).parse(g);
+                List<Triple> lst;
+                try {
+                  List<LintProblem> problems = new LinkedList<>();
+                  if (text != null) {
+                    InputStream prepareIn = new ByteArrayInputStream(
+                        text.getBytes(StandardCharsets.UTF_8));
+                    RDFParser.source(prepareIn)
+                        .lang(lang)
+                        .base(baseUri + subdir)
+                        .errorHandler(new MyErrorHandler(problems))
+                        .parse(g);
+                  } else {
+                    RDFParser.source(e.toString())
+                        .lang(lang)
+                        .base(baseUri + subdir)
+                        .errorHandler(new MyErrorHandler(problems))
+                        .parse(g);
+                  }
+                  lst = g.find().toList();
+                } catch (RiotException ex) {
+                  lst = new LinkedList<>();
+                } finally {
+                  g.close();
                 }
-                List<Triple> lst = g.find().toList();
-                g.close();
                 return lst;
               }
           ));
-      validators.forEach(v -> {
-        v.prepareValidationResource(fileTripleSet);
-      });
-
-      sourceTextMap.forEach((uri, source) -> {
-        // parse
-        String filepath = convertUri2FilePath(uri);
-        String filename = filepath.substring(parentPath.length() + 1);
-        String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
-        RdflintParser parser = uri.endsWith(".ttl")
-            ? new RdflintParserTurtle() : new RdflintParserRdfxml(baseUri + subdir);
-        validators.forEach(parser::addRdfValidator);
-        List<Diagnostic> diagnosticList = parser.parse(source).stream()
-            .map(p -> new Diagnostic(
-                new Range(
-                    new Position((int) p.getLocation().getBeginLine(),
-                        (int) p.getLocation().getBeginCol()),
-                    new Position((int) p.getLocation().getEndLine(),
-                        (int) p.getLocation().getEndCol())),
-                p.getKey())
-            ).collect(Collectors.toList());
-
-        // publish
-        PublishDiagnosticsParams diagnostics = new PublishDiagnosticsParams();
-        diagnostics.setUri(uri);
-        diagnostics.setDiagnostics(diagnosticList);
-        this.client.publishDiagnostics(diagnostics);
-      });
     } catch (IOException ex) {
       showException("Error cannot diagnostics", ex);
     }
+  }
+
+  void diagnostics(String changedUri) {
+    // load triple
+    String changedFilePath = convertUri2FilePath(changedUri);
+    String parentPath = rdflintParams.getTargetDir();
+    String baseUri = rdflintParams.getBaseUri();
+    {
+      Graph g = Factory.createGraphMem();
+      String filename = changedFilePath.substring(parentPath.length() + 1);
+      String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+      Lang lang = changedFilePath.endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
+      String text = sourceTextMap.get(convertFilePath2Uri(changedFilePath));
+      List<LintProblem> problems = new LinkedList<>();
+      try {
+        if (text != null) {
+          InputStream prepareIn = new ByteArrayInputStream(
+              text.getBytes(StandardCharsets.UTF_8));
+          RDFParser.source(prepareIn)
+              .lang(lang)
+              .base(baseUri + subdir)
+              .errorHandler(new MyErrorHandler(problems))
+              .parse(g);
+        } else {
+          RDFParser.source(changedFilePath)
+              .lang(lang)
+              .base(baseUri + subdir)
+              .errorHandler(new MyErrorHandler(problems))
+              .parse(g);
+        }
+        List<Triple> tripleSet = g.find().toList();
+        String key = changedFilePath.substring(parentPath.length() + 1);
+        fileTripleSet.put(key, tripleSet);
+      } catch (Exception ex) {
+        if (problems.isEmpty()) {
+          problems.add(new LintProblem(
+              ErrorLevel.WARN,
+              null,
+              new LintProblemLocation(1, 1, 1, 1),
+              null,
+              ex.getMessage()));
+        }
+      } finally {
+        g.close();
+      }
+      if (!problems.isEmpty()) {
+        List<Diagnostic> diagnosticList = convertLintProblem2DiagnosticList(problems);
+        PublishDiagnosticsParams diagnostics = new PublishDiagnosticsParams();
+        diagnostics.setUri(changedUri);
+        diagnostics.setDiagnostics(diagnosticList);
+        this.client.publishDiagnostics(diagnostics);
+        return;
+      }
+    }
+    // diagnostics
+    validators.forEach(v -> {
+      v.prepareValidationResource(fileTripleSet);
+    });
+    sourceTextMap.forEach((uri, source) -> {
+      // parse
+      String filepath = convertUri2FilePath(uri);
+      String filename = filepath.substring(parentPath.length() + 1);
+      String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+      RdflintParser parser = uri.endsWith(".ttl")
+          ? new RdflintParserTurtle() : new RdflintParserRdfxml(baseUri + subdir);
+      validators.forEach(parser::addRdfValidator);
+      List<LintProblem> problems = parser.parse(source);
+      LintProblemSet problemSet = new LintProblemSet();
+      problems.forEach(p -> {
+            problemSet.addProblem(filename, p);
+          }
+      );
+
+      // suppress problems
+      try {
+        LintProblemSet filtered = ValidationRunner
+            .suppressProblems(problemSet, rdflintParams.getSuppressPath());
+        problems = filtered.getProblemSet().get(filename);
+        if (problems == null) {
+          problems = new LinkedList<>();
+        }
+      } catch (IOException ex) {
+        // pass
+      }
+      List<Diagnostic> diagnosticList = convertLintProblem2DiagnosticList(problems);
+
+      // publish
+      PublishDiagnosticsParams diagnostics = new PublishDiagnosticsParams();
+      diagnostics.setUri(uri);
+      diagnostics.setDiagnostics(diagnosticList);
+      this.client.publishDiagnostics(diagnostics);
+    });
   }
 
   @Override
@@ -242,7 +403,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     sourceTextMap.put(params.getTextDocument().getUri(), params.getTextDocument().getText());
 
     // diagnostics
-    diagnostics();
+    diagnostics(params.getTextDocument().getUri());
   }
 
   @Override
@@ -253,7 +414,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     sourceTextMap.put(params.getTextDocument().getUri(), sourceText);
 
     // diagnostics
-    diagnostics();
+    diagnostics(params.getTextDocument().getUri());
   }
 
   @Override
@@ -266,10 +427,15 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     diagnostics.setUri(params.getTextDocument().getUri());
     diagnostics.setDiagnostics(new LinkedList<>());
     this.client.publishDiagnostics(diagnostics);
+
+    // diagnostics
+    diagnostics(params.getTextDocument().getUri());
   }
 
   @Override
   public void didSave(DidSaveTextDocumentParams params) {
+    // refresh all tripleset
+    refreshFileTripleSet();
   }
 
   @Override

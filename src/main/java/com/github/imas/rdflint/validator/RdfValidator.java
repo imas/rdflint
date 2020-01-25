@@ -24,10 +24,10 @@ public interface RdfValidator {
 
   void close();
 
-  LintProblem validateTriple(Node subject, Node predicate, Node object,
+  List<LintProblem> validateTriple(Node subject, Node predicate, Node object,
       int beginLine, int beginCol, int endLine, int endCol);
 
-  LintProblem validateNode(Node node,
+  List<LintProblem> validateNode(Node node,
       int beginLine, int beginCol, int endLine, int endCol);
 
 }

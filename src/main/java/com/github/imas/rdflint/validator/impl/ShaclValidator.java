@@ -5,6 +5,7 @@ import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemLocation;
 import com.github.imas.rdflint.LintProblemSet;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,8 +90,10 @@ public class ShaclValidator extends AbstractRdfValidator {
   }
 
   @Override
-  public LintProblem validateTriple(Node subject, Node predicate, Node object,
+  public List<LintProblem> validateTriple(Node subject, Node predicate, Node object,
       int beginLine, int beginCol, int endLine, int endCol) {
+    List<LintProblem> rtn = new LinkedList<>();
+
     final List<Node> matchedResults = result
         .find(Node.ANY, rdfNode("type"), shaclNode("ValidationResult"))
         .mapWith(Triple::getSubject)
@@ -113,13 +116,13 @@ public class ShaclValidator extends AbstractRdfValidator {
     });
 
     if (buff.length() > 0) {
-      return new LintProblem(ErrorLevel.WARN,
+      rtn.add(new LintProblem(ErrorLevel.WARN,
           this,
           new LintProblemLocation(beginLine, beginCol, endLine, endCol,
               new Triple(subject, predicate, object)),
-          "shaclViolation", buff.toString());
+          "shaclViolation", buff.toString()));
     }
-    return null;
+    return rtn;
   }
 
 }

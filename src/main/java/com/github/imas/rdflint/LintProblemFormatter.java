@@ -21,7 +21,10 @@ public class LintProblemFormatter {
 
   private static Map<String, ResourceBundle> messagesMap = new ConcurrentHashMap<>();
 
-  private static String dumpMessage(String key, Locale locale, Object... args) {
+  /**
+   * dump problem message.
+   */
+  public static String dumpMessage(String key, Locale locale, Object... args) {
     final String keyName = key.substring(key.lastIndexOf('.') + 1);
     final String pkgName = key.substring(0, key.lastIndexOf('.'));
     final String bundleKey = locale == null ? pkgName : pkgName + "_" + locale.toString();
@@ -44,7 +47,10 @@ public class LintProblemFormatter {
     return StringUtils.join(args, ", ");
   }
 
-  private static Object[] buildArguments(LintProblem problem) {
+  /**
+   * build problem message arguments. 1st argument is location string.
+   */
+  public static Object[] buildArguments(LintProblem problem) {
     List<Object> args = new LinkedList<>();
     if (problem.getLocationString() != null) {
       args.add(problem.getLocationString());

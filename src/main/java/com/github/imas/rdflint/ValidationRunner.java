@@ -148,7 +148,10 @@ public class ValidationRunner {
         ));
   }
 
-  private LintProblemSet suppressProblems(LintProblemSet problemSet, String suppressPath)
+  /**
+   * suppress problems.
+   */
+  public static LintProblemSet suppressProblems(LintProblemSet problemSet, String suppressPath)
       throws IOException {
 
     if (suppressPath == null) {

@@ -57,7 +57,7 @@ public class RdfLintLanguageServerTest {
     LanguageClient client = mock(LanguageClient.class);
     lsp.connect(client);
 
-    lsp.diagnostics();
+    lsp.refreshFileTripleSet();
 
     verify(client, never()).publishDiagnostics(any());
   }
@@ -128,6 +128,40 @@ public class RdfLintLanguageServerTest {
   }
 
   @Test
+  public void diagnosticsChangeParseError() throws Exception {
+    RdfLintLanguageServer lsp = new RdfLintLanguageServer();
+    InitializeParams initParams = new InitializeParams();
+    String rootPath = this.getClass().getClassLoader().getResource("testValidatorsImpl/").getPath();
+    String parentPath = rootPath + "TrimValidator/turtle_needtrim";
+    initParams.setRootUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath));
+    lsp.initialize(initParams);
+
+    LanguageClient client = mock(LanguageClient.class);
+    lsp.connect(client);
+
+    DidChangeTextDocumentParams changeParams = new DidChangeTextDocumentParams();
+    changeParams.setTextDocument(new VersionedTextDocumentIdentifier());
+    changeParams.getTextDocument()
+        .setUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath + "/needtrim.rdf"));
+    List<TextDocumentContentChangeEvent> changeEvents = new LinkedList<>();
+    changeParams.setContentChanges(changeEvents);
+    changeEvents.add(new TextDocumentContentChangeEvent());
+    changeEvents.get(0).setText("<rdf:RDF\n"
+        + "    xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
+        + "    xmlns:schema=\"http://schema.org/\"\n"
+        + "    >\n"
+        + "\n"
+        + "  <rdf:Description rdf:about=\"something\">\n"
+        + "    <schema:familyName xml:lang=\"ja\">familyName</schema:familyN>\n"
+        + "  </rdf:Description>\n"
+        + "\n"
+        + "</rdf:RDF>");
+    lsp.didChange(changeParams);
+
+    verify(client, times(1)).publishDiagnostics(any());
+  }
+
+  @Test
   public void diagnosticsClose() throws Exception {
     RdfLintLanguageServer lsp = new RdfLintLanguageServer();
     InitializeParams initParams = new InitializeParams();
@@ -145,7 +179,7 @@ public class RdfLintLanguageServerTest {
         .setUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath + "/needtrim.rdf"));
 
     lsp.didClose(closeParams);
-    verify(client, times(1)).publishDiagnostics(any());
+    verify(client, times(2)).publishDiagnostics(any());
   }
 
 }
