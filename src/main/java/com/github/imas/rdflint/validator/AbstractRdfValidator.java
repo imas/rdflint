@@ -107,15 +107,15 @@ public class AbstractRdfValidator implements RdfValidator {
   }
 
   @Override
-  public LintProblem validateTriple(Node subject, Node predicate, Node object,
+  public List<LintProblem> validateTriple(Node subject, Node predicate, Node object,
       int beginLine, int beginCol, int endLine, int endCol) {
-    return null;
+    return new LinkedList<>();
   }
 
   @Override
-  public LintProblem validateNode(Node node,
+  public List<LintProblem> validateNode(Node node,
       int beginLine, int beginCol, int endLine, int endCol) {
-    return null;
+    return new LinkedList<>();
   }
 
 }

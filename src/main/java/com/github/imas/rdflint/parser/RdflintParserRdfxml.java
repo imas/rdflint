@@ -1,6 +1,8 @@
 package com.github.imas.rdflint.parser;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
+import com.github.imas.rdflint.LintProblemLocation;
 import com.github.imas.rdflint.validator.RdfValidator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -65,25 +67,44 @@ public class RdflintParserRdfxml extends AbstractRdflintParser {
       models.add(m);
     });
 
+    List<LintProblem> diagnosticErrorList = new LinkedList<>();
     ReaderRIOTRDFXML2 reader = new ReaderRIOTRDFXML2(new ErrorHandler() {
+      private void addDiagnostic(String message, long line, long col, LintProblem.ErrorLevel lv) {
+        diagnosticErrorList.add(new LintProblem(
+            lv,
+            null,
+            new LintProblemLocation(line, 1, line, col),
+            null, message));
+      }
+
       @Override
       public void warning(String message, long line, long col) {
+        addDiagnostic(message, line, col, ErrorLevel.WARN);
       }
 
       @Override
       public void error(String message, long line, long col) {
+        addDiagnostic(message, line, col, LintProblem.ErrorLevel.ERROR);
       }
 
       @Override
       public void fatal(String message, long line, long col) {
+        addDiagnostic(message, line, col, LintProblem.ErrorLevel.ERROR);
       }
     }, models);
 
     ContentType ct = Lang.RDFXML.getContentType();
     InputStream validateIn = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
-    reader.read(validateIn, baseUri, ct, StreamRDFLib.graph(g), context);
-
-    g.close();
+    try {
+      reader.read(validateIn, baseUri, ct, StreamRDFLib.graph(g), context);
+    } catch (Exception ex) {
+      // pass
+    } finally {
+      g.close();
+    }
+    if (!diagnosticErrorList.isEmpty()) {
+      return diagnosticErrorList;
+    }
 
     return reader.getDiagnosticList();
   }
@@ -255,12 +276,12 @@ public class RdflintParserRdfxml extends AbstractRdflintParser {
         } else {
           arp.load(input, xmlBase);
         }
-      } catch (IOException e) {
-        errorHandler.error(filename + ": " + ParseException.formatMessage(e), -1, -1); // NOPMD
       } catch (SAXParseException e) {
         // already reported.
-      } catch (SAXException sax) {
-        errorHandler.error(filename + ": " + ParseException.formatMessage(sax), -1, -1); // NOPMD
+      } catch (IOException | SAXException | RiotParseException ex) {
+        errorHandler.error(filename + ": " + ParseException.formatMessage(ex), // NOPMD
+            arp.getLocator().getLineNumber(),
+            arp.getLocator().getColumnNumber());
       }
       sink.finish();
     }
@@ -290,31 +311,25 @@ public class RdflintParserRdfxml extends AbstractRdflintParser {
       public void statement(AResource subj, AResource pred, AResource obj) {
         Triple t = convert(subj, pred, obj);
         models.forEach(m -> {
-          LintProblem d = m.validateTriple(t.getSubject(), t.getPredicate(), t.getObject(),
-              arp.getLocator().getLineNumber() - 1, 0,
-              arp.getLocator().getLineNumber() - 1, arp.getLocator().getColumnNumber());
-          if (d != null) {
-            diagnosticList.add(d);
-          }
+          List<LintProblem> d = m.validateTriple(t.getSubject(), t.getPredicate(), t.getObject(),
+              arp.getLocator().getLineNumber(), 1,
+              arp.getLocator().getLineNumber(), arp.getLocator().getColumnNumber());
+          diagnosticList.addAll(d);
 
           d = m.validateNode(t.getSubject(),
-              arp.getLocator().getLineNumber() - 1, 0,
-              arp.getLocator().getLineNumber() - 1, arp.getLocator().getColumnNumber());
-          if (d != null) {
-            diagnosticList.add(d);
-          }
+              arp.getLocator().getLineNumber(), 1,
+              arp.getLocator().getLineNumber(), arp.getLocator().getColumnNumber());
+          diagnosticList.addAll(d);
+
           d = m.validateNode(t.getPredicate(),
-              arp.getLocator().getLineNumber() - 1, 0,
-              arp.getLocator().getLineNumber() - 1, arp.getLocator().getColumnNumber());
-          if (d != null) {
-            diagnosticList.add(d);
-          }
+              arp.getLocator().getLineNumber(), 1,
+              arp.getLocator().getLineNumber(), arp.getLocator().getColumnNumber());
+          diagnosticList.addAll(d);
+
           d = m.validateNode(t.getObject(),
-              arp.getLocator().getLineNumber() - 1, 0,
-              arp.getLocator().getLineNumber() - 1, arp.getLocator().getColumnNumber());
-          if (d != null) {
-            diagnosticList.add(d);
-          }
+              arp.getLocator().getLineNumber(), 1,
+              arp.getLocator().getLineNumber(), arp.getLocator().getColumnNumber());
+          diagnosticList.addAll(d);
 
         });
         output.triple(convert(subj, pred, obj));
@@ -324,25 +339,20 @@ public class RdflintParserRdfxml extends AbstractRdflintParser {
       public void statement(AResource subj, AResource pred, ALiteral lit) {
         Triple t = convert(subj, pred, lit);
         models.forEach(m -> {
-          LintProblem d = m.validateTriple(t.getSubject(), t.getPredicate(), t.getObject(),
-              arp.getLocator().getLineNumber() - 1, 0,
-              arp.getLocator().getLineNumber() - 1, arp.getLocator().getColumnNumber());
-          if (d != null) {
-            diagnosticList.add(d);
-          }
+          List<LintProblem> d = m.validateTriple(t.getSubject(), t.getPredicate(), t.getObject(),
+              arp.getLocator().getLineNumber(), 1,
+              arp.getLocator().getLineNumber(), arp.getLocator().getColumnNumber());
+          diagnosticList.addAll(d);
 
           d = m.validateNode(t.getSubject(),
-              arp.getLocator().getLineNumber() - 1, 0,
-              arp.getLocator().getLineNumber() - 1, arp.getLocator().getColumnNumber());
-          if (d != null) {
-            diagnosticList.add(d);
-          }
+              arp.getLocator().getLineNumber(), 1,
+              arp.getLocator().getLineNumber(), arp.getLocator().getColumnNumber());
+          diagnosticList.addAll(d);
+
           d = m.validateNode(t.getPredicate(),
-              arp.getLocator().getLineNumber() - 1, 0,
-              arp.getLocator().getLineNumber() - 1, arp.getLocator().getColumnNumber());
-          if (d != null) {
-            diagnosticList.add(d);
-          }
+              arp.getLocator().getLineNumber(), 1,
+              arp.getLocator().getLineNumber(), arp.getLocator().getColumnNumber());
+          diagnosticList.addAll(d);
 
         });
         output.triple(convert(subj, pred, lit));
@@ -374,8 +384,12 @@ public class RdflintParserRdfxml extends AbstractRdflintParser {
               int i = uriStr.indexOf(' ');
               String s = uriStr.substring(0, i);
               String msg = String.format("Bad character in IRI (space): <%s[space]...>", s);
-              riotErrorHandler.error(msg, -1, -1);
-              throw new RiotParseException(msg, -1, -1);
+              riotErrorHandler.error(msg, // NOPMD
+                  arp.getLocator().getLineNumber(),
+                  arp.getLocator().getColumnNumber());
+              throw new RiotParseException(msg,
+                  arp.getLocator().getLineNumber(),
+                  arp.getLocator().getColumnNumber());
             }
           }
           return NodeFactory.createURI(uriStr);
@@ -396,7 +410,9 @@ public class RdflintParserRdfxml extends AbstractRdflintParser {
 
       private Triple convert(AResource s, AResource p, ALiteral o) {
         Node object = convert(o);
-        checker.check(object, -1, -1);
+        checker.check(object,
+            arp.getLocator().getLineNumber(),
+            arp.getLocator().getColumnNumber());
         return Triple.create(convert(s), convert(p), object);
       }
 

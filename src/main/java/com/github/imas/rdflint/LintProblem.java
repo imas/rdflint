@@ -20,13 +20,14 @@ public class LintProblem {
    */
   public LintProblem(ErrorLevel level, RdfValidator validator, LintProblemLocation location,
       String key, Object... arguments) {
-    String pkgName = "";
-    if (validator != null) {
-      pkgName = validator.getClass().getPackage().getName();
+    if (validator == null || key == null) {
+      this.key = "com.github.imas.rdflint.validator.impl.parseWarning";
+    } else {
+      String pkgName = validator.getClass().getPackage().getName();
+      this.key = pkgName + "." + key;
     }
     this.location = location;
     this.level = level;
-    this.key = pkgName + "." + key;
     this.arguments = arguments.clone();
   }
 

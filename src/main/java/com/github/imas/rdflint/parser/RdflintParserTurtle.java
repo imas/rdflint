@@ -1,6 +1,7 @@
 package com.github.imas.rdflint.parser;
 
 import com.github.imas.rdflint.LintProblem;
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemLocation;
 import com.github.imas.rdflint.validator.RdfValidator;
 import java.io.ByteArrayInputStream;
@@ -65,13 +66,11 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
       validationModels.forEach(m -> {
         if (object.isLiteral()) {
           int length = object.getLiteralLexicalForm().length();
-          LintProblem diagnostic = m
+          List<LintProblem> diagnostic = m
               .validateTriple(subject, predicate, object,
-                  (int) line - 1, (int) col - 1,
-                  (int) line - 1, (int) col - 1 + length);
-          if (diagnostic != null) {
-            diagnosticList.add(diagnostic);
-          }
+                  (int) line, (int) col,
+                  (int) line, (int) col + length);
+          diagnosticList.addAll(diagnostic);
         }
       });
       return super.createTriple(subject, predicate, object, line, col);
@@ -106,11 +105,9 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
           length = str.length();
         }
         if (node != null) {
-          LintProblem diagnostic = m
-              .validateNode(node, line - 1, col - 1, line - 1, col - 1 + length);
-          if (diagnostic != null) {
-            diagnosticList.add(diagnostic);
-          }
+          List<LintProblem> diagnostic = m
+              .validateNode(node, line, col, line, col + length);
+          diagnosticList.addAll(diagnostic);
         }
       });
       return super.create(currentGraph, token);
@@ -127,19 +124,32 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
       Context context = new Context();
       boolean checking = false;
       boolean strict = false;
+      List<LintProblem> diagnosticErrorList = new LinkedList<>();
       RdflintParseProfile profile = new RdflintParseProfile(
           factory,
           new ErrorHandler() {
+            private void addDiagnostic(String message, long line, long col,
+                LintProblem.ErrorLevel lv) {
+              diagnosticErrorList.add(new LintProblem(
+                  lv,
+                  null,
+                  new LintProblemLocation(line, 0, line, col),
+                  null, message));
+            }
+
             @Override
             public void warning(String message, long line, long col) {
+              addDiagnostic(message, line, col, ErrorLevel.WARN);
             }
 
             @Override
             public void error(String message, long line, long col) {
+              addDiagnostic(message, line, col, ErrorLevel.ERROR);
             }
 
             @Override
             public void fatal(String message, long line, long col) {
+              addDiagnostic(message, line, col, ErrorLevel.ERROR);
             }
           },
           resolver,
@@ -158,37 +168,40 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
       InputStream validateIn = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
       reader.read(validateIn, null, ct, StreamRDFLib.graph(g), context);
 
+      if (!diagnosticErrorList.isEmpty()) {
+        return diagnosticErrorList;
+      }
       return profile.getDiagnosticList();
     } catch (RiotParseException ex) {
-      int line = (int) ex.getLine() - 1;
-      int col = (int) ex.getCol() - 1;
+      int line = (int) ex.getLine();
+      int col = (int) ex.getCol();
       return Collections.singletonList(
           new LintProblem(
               LintProblem.ErrorLevel.ERROR,
               null,
               new LintProblemLocation(line, col),
-              ex.getMessage()));
+              null, ex.getMessage()));
     } catch (DatatypeFormatException ex) {
-      int line = 0;
-      int col = 0;
+      int line = 1;
+      int col = 1;
       return Collections.singletonList(
           new LintProblem(
               LintProblem.ErrorLevel.ERROR,
               null,
               new LintProblemLocation(line, col),
-              ex.getMessage()));
+              null, ex.getMessage()));
     } catch (Exception ex) {
       StringWriter w = new StringWriter();
       PrintWriter p = new PrintWriter(w);
       ex.printStackTrace(p);
-      int line = 0;
-      int col = 0;
+      int line = 1;
+      int col = 1;
       return Collections.singletonList(
           new LintProblem(
               LintProblem.ErrorLevel.ERROR,
               null,
               new LintProblemLocation(line, col),
-              ex.getMessage()));
+              null, ex.getMessage()));
     }
   }
 

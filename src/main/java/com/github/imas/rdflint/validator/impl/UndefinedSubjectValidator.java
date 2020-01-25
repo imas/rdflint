@@ -74,21 +74,28 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
   }
 
   @Override
-  public LintProblem validateNode(Node node, int beginLine, int beginCol, int endLine, int endCol) {
+  public List<LintProblem> validateNode(Node node, int beginLine, int beginCol, int endLine,
+      int endCol) {
+    List<LintProblem> rtn = new LinkedList<>();
+    boolean undefinedFlag = false;
+
     if (node != null && node.isURI()) {
       for (String prefix : commonPrefixes) {
         if (node.getURI().startsWith(prefix) && !commonSubjects.contains(node.getURI())) {
-          return new LintProblem(ErrorLevel.WARN, this,
-              new LintProblemLocation(beginLine, beginCol, endLine, endCol, node),
-              "undefinedUri", node.getURI());
+          undefinedFlag = true;
+          break;
         }
       }
       if (node.getURI().startsWith(baseUri) && !subjects.contains(node.getURI())) {
-        return new LintProblem(ErrorLevel.WARN, this,
-            new LintProblemLocation(beginLine, beginCol, endLine, endCol, node),
-            "undefinedUri", node.getURI());
+        undefinedFlag = true;
       }
     }
-    return null;
+
+    if (undefinedFlag) {
+      rtn.add(new LintProblem(ErrorLevel.WARN, this,
+          new LintProblemLocation(beginLine, beginCol, endLine, endCol, node),
+          "undefinedUri", node.getURI()));
+    }
+    return rtn;
   }
 }
