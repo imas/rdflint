@@ -270,7 +270,10 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
               e -> {
                 Graph g = Factory.createGraphMem();
                 String filename = e.toString().substring(parentPath.length() + 1);
-                String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+                String subdir = filename.substring(0, filename.lastIndexOf(File.separator) + 1);
+                if (File.separatorChar == '\\') {
+                  subdir = filename.replaceAll("\\\\", "/");
+                }
                 Lang lang = e.toString().endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
                 String text = sourceTextMap.get(convertFilePath2Uri(e.toString()));
                 List<Triple> lst;
@@ -313,7 +316,10 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     {
       Graph g = Factory.createGraphMem();
       String filename = changedFilePath.substring(parentPath.length() + 1);
-      String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+      String subdir = filename.substring(0, filename.lastIndexOf(File.separator) + 1);
+      if (File.separatorChar == '\\') {
+        subdir = filename.replaceAll("\\\\", "/");
+      }
       Lang lang = changedFilePath.endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
       String text = sourceTextMap.get(convertFilePath2Uri(changedFilePath));
       List<LintProblem> problems = new LinkedList<>();
@@ -365,7 +371,10 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
       // parse
       String filepath = convertUri2FilePath(uri);
       String filename = filepath.substring(parentPath.length() + 1);
-      String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+      String subdir = filename.substring(0, filename.lastIndexOf(File.separator) + 1);
+      if (File.separatorChar == '\\') {
+        subdir = filename.replaceAll("\\\\", "/");
+      }
       RdflintParser parser = uri.endsWith(".ttl")
           ? new RdflintParserTurtle() : new RdflintParserRdfxml(baseUri + subdir);
       validators.forEach(parser::addRdfValidator);

@@ -97,7 +97,10 @@ public class ValidationRunner {
         .filter(e -> e.toString().endsWith(".rdf") || e.toString().endsWith(".ttl"))
         .forEach(f -> {
           String filename = f.toString().substring(parentPath.length() + 1);
-          String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+          String subdir = filename.substring(0, filename.lastIndexOf(File.separator) + 1);
+          if (File.separatorChar == '\\') {
+            subdir = filename.replaceAll("\\\\", "/");
+          }
           String subBase = baseUri + subdir;
           RdflintParser parser =
               f.toString().endsWith(".ttl") ? new RdflintParserTurtle()
@@ -109,6 +112,10 @@ public class ValidationRunner {
             List<LintProblem> fileProblems = parser.parse(sourceText);
             String file = f.toString().substring(parentPath.length() + 1);
             fileProblems.forEach(p -> problems.addProblem(file, p));
+            logger.trace(String.format(
+                "execute: Files.walk (path=%s,problemsize=%d)",
+                f.toString(),
+                fileProblems.size()));
           } catch (IOException ex) {
             ex.printStackTrace(); // NOPMD
           }
@@ -139,7 +146,10 @@ public class ValidationRunner {
             e -> {
               Graph g = Factory.createGraphMem();
               String filename = e.toString().substring(parentPath.length() + 1);
-              String subdir = filename.substring(0, filename.lastIndexOf('/') + 1);
+              String subdir = filename.substring(0, filename.lastIndexOf(File.separator) + 1);
+              if (File.separatorChar == '\\') {
+                subdir = filename.replaceAll("\\\\", "/");
+              }
               RDFParser.source(e.toString()).base(baseUri + subdir).parse(g);
               List<Triple> lst = g.find().toList();
               g.close();
@@ -153,8 +163,9 @@ public class ValidationRunner {
    */
   public static LintProblemSet suppressProblems(LintProblemSet problemSet, String suppressPath)
       throws IOException {
-
+    logger.trace("suppressProblems: in");
     if (suppressPath == null) {
+      logger.trace("suppressProblems: exit");
       return problemSet;
     }
     Yaml yaml = new Yaml();
@@ -171,7 +182,11 @@ public class ValidationRunner {
 
     LintProblemSet filtered = new LintProblemSet();
     problemSet.getProblemSet().forEach((f, l) -> {
-      List<LinkedHashMap<String, Object>> filterList = suppress.get(f);
+      String relativeUriPath = f;
+      if (File.separatorChar == '\\') {
+        relativeUriPath = relativeUriPath.replaceAll("\\\\", "/");
+      }
+      List<LinkedHashMap<String, Object>> filterList = suppress.get(relativeUriPath);
       l.forEach(m -> {
         if (filterList == null) {
           filtered.addProblem(f, m);
@@ -219,6 +234,7 @@ public class ValidationRunner {
       });
     });
 
+    logger.trace("suppressProblems: out");
     return filtered;
   }
 

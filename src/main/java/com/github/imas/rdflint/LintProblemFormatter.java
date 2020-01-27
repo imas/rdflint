@@ -1,5 +1,6 @@
 package com.github.imas.rdflint;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
@@ -62,8 +63,9 @@ public class LintProblemFormatter {
   /**
    * dump formatted problems.
    */
+  @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING")
   public static void out(OutputStream out, LintProblemSet problems) {
-    PrintWriter pw = FileUtils.asPrintWriterUTF8(out);
+    PrintWriter pw = new PrintWriter(out);
     problems.getProblemSet().forEach((f, l) -> {
       pw.println(f);
       l.forEach(m -> {

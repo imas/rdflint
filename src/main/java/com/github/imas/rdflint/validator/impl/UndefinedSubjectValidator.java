@@ -70,7 +70,8 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
         .map(t -> t.getSubject().getURI())
         .collect(Collectors.toSet());
 
-    logger.trace("prepareValidationResource: out");
+    logger.trace(
+        String.format("prepareValidationResource: out (subject_size=%d)", this.subjects.size()));
   }
 
   @Override
