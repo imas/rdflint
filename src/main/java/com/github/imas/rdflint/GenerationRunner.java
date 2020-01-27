@@ -17,18 +17,23 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.apache.log4j.Logger;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
 public class GenerationRunner {
 
+  private static final Logger logger = Logger.getLogger(GenerationRunner.class.getName());
+
   /**
    * rdflint generation process.
    */
   void execute(RdfLintParameters params, String targetDir)
       throws IOException {
+    logger.trace("execute: in");
     if (params.getGeneration() == null) {
+      logger.trace("execute: exit");
       return;
     }
 
@@ -93,6 +98,8 @@ public class GenerationRunner {
         ex.printStackTrace(); // NOPMD
       }
     });
+
+    logger.trace("execute: out");
   }
 
 }

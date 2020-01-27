@@ -1,6 +1,7 @@
 package com.github.imas.rdflint;
 
 import com.github.imas.rdflint.config.RdfLintParameters;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -23,7 +24,6 @@ import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.util.FileUtils;
 import org.apache.log4j.Logger;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
@@ -79,10 +79,11 @@ public class InteractiveMode {
     }
   }
 
+  @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING")
   static boolean interactiveCommand(OutputStream out, String line,
       RdfLintParameters params, String targetDir, Model m)
       throws IOException {
-    PrintWriter pw = FileUtils.asPrintWriterUTF8(out);
+    PrintWriter pw = new PrintWriter(out);
 
     if (StringUtils.isEmpty(line)) {
       return true;

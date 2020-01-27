@@ -173,6 +173,7 @@ public class RdfLint {
    * load configuration file.
    */
   public RdfLintParameters loadConfig(String configPath) throws IOException {
+    logger.trace(String.format("loadConfig: configPath=%s", configPath));
     if (configPath == null) {
       return new RdfLintParameters();
     }
