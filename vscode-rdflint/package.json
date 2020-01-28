@@ -1,0 +1,110 @@
+{
+	"name": "vscode-rdflint",
+	"displayName": "RDF language support via rdflint",
+	"version": "0.0.4",
+	"publisher": "takemikami",
+	"description": "RDF language support via rdflint",
+	"author": {
+		"name": "Takeshi Mikami",
+		"url": "https://takemikami.com/"
+	},
+	"categories": [
+		"Linters"
+	],
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/imas/vscode-rdflint/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/imas/vscode-rdflint"
+	},
+	"homepage": "https://github.com/imas/vscode-rdflint/blob/master/README.md",
+	"engines": {
+		"vscode": "^1.41.0"
+	},
+	"activationEvents": [
+		"onCommand:rdflint.interactiveMode",
+		"onLanguage:turtle",
+		"onLanguage:rdfxml"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "rdflint.interactiveMode",
+				"title": "rdflint interactiveMode: SPARQL playground"
+			}
+		],
+		"languages": [
+			{
+				"id": "rdfxml",
+				"extensions": [
+					".rdf"
+				],
+				"aliases": [
+					"RDFXML",
+					"RDF",
+					"rdfxml",
+					"rdf"
+				],
+				"configuration": "./rdfxml.language-configuration.json"
+			},
+			{
+				"id": "turtle",
+				"extensions": [
+					".ttl"
+				],
+				"aliases": [
+					"TURTLE",
+					"turtle"
+				]
+			}
+		],
+		"grammars": [
+			{
+				"language": "rdfxml",
+				"scopeName": "text.xml",
+				"path": "./syntaxes/rdfxml.tmLanguage.json"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "RdflintLanguageServer configuration",
+			"properties": {
+				"rdflintLanguageServer.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VS Code and the language server."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile",
+		"test": "node ./out/test/runTest.js"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^5.2.1"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.41.0",
+		"glob": "^7.1.5",
+		"mocha": "^6.2.2",
+		"typescript": "^3.6.4",
+		"tslint": "^5.20.0",
+		"vscode-test": "^1.2.2"
+	}
+}
