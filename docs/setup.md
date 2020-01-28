@@ -31,6 +31,34 @@ rdflintのセットアップ手順を説明します。
    $ java -jar rdflint-{{site.RDFLINT_VERSION}}.jar
    ```
 
+## Visual Studio Codeへのセットアップ
+
+1. rdflintの実行にはJavaの実行環境が必要です。ランタイムがインストールされていない場合は、以下のリンクからJREまたはJDKをダウンロードしてインストールして下さい。
+
+   Java SE - Downloads | Oracle Technology Network | Oracle  
+   [https://www.oracle.com/technetwork/java/javase/downloads/index.html](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
+
+2. Javaのインストールが完了したら、環境変数「JAVA_HOME」にJavaのインストール先を設定します。  
+
+   「エクスプローラー」を開き、「PC」を選択する、  
+   右クリックメニューから「プロパティ」を選ぶ、  
+   「システム」が開くので、の左側メニューで「システムの詳細設定」を選ぶ、  
+   「システムのプロパティ」が開くので、「詳細設定」タブで「環境変数」を選ぶ、  
+   「新規」ボタンを押す、  
+   「変数名」に「JAVA_HOME」を指定、  
+   「ディレクトリの参照」からJavaのインストール先を指定、  
+   「OK」を押す。  
+   ※Javaのインストール先は、変更していなければ「C:\Program Files\Java\jdk-(番号)」などです。
+
+3. Visual Studio Codeを起動します。（環境変数を有効にするため、既に起動していた場合は一度終了してください）
+
+4. Extensionsメニュー(File->Preferences->Extensions)から、  
+   「rdflint」などのキーワードで検索し「RDF lanauage support via rdflint」を選びます。  
+   「Install」を押して、拡張機能をインストールします。
+
+5. Ctrl+Shift+Pメニューで、「rdflint interactive mode: SPARQL playground」を選ぶと、  
+   インタラクティブモードでrdflintが起動します。
+
 ## Homebrewによるセットアップ (macOSのみ)
 
 1. Homebrewがインストールされていない場合は、以下のリンクを参照してインストールして下さい。

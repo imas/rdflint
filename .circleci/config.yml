@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  build-gradle:
     docker:
       - image: circleci/openjdk:8
     working_directory: ~/repo
@@ -23,3 +23,31 @@ jobs:
           key: v1-dependencies-{{ checksum "build.gradle" }}
       - store_artifacts:
           path: ~/repo/build/reports
+  build-node:
+    docker:
+      - image: circleci/node:12
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - node-dependencies-{{ checksum "vscode-rdflint/package-lock.json" }}
+            - node-dependencies-
+      - run:
+          name: npm install, build
+          command: |
+            cd vscode-rdflint
+            npm ci
+            npm run compile --if-present
+      - save_cache:
+          paths:
+            - ~/.npm"
+          key: node-dependencies-{{ checksum "vscode-rdflint/package-lock.json" }}
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - build-gradle
+      - build-node
+
