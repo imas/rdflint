@@ -29,6 +29,16 @@ Provides RDF language support via [rdflint](https://github.com/imas/rdflint).
 
 Please fork this repository, and create pull request for contributing.
 
+### Build and execute
+
+Install npm libraries.
+
+```
+npm install
+```
+
+Open this folder on Visual Studio Code, and Hit F5 Key to execute.
+
 ## License
 
 vscode-rdflint is released under the MIT License.

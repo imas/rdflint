@@ -1,8 +1,10 @@
 rdflint
 ---
 
-[![](https://jitpack.io/v/imas/rdflint.svg)](https://jitpack.io/#imas/rdflint)
-[![](https://img.shields.io/badge/users_guide-ja-blue)](https://imas.github.io/rdflint/)
+[![JitPack](https://jitpack.io/v/imas/rdflint.svg)](https://jitpack.io/#imas/rdflint)
+[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version/takemikami.vscode-rdflint.svg "Current Release")](https://marketplace.visualstudio.com/items?itemName=takemikami.vscode-rdflint)
+[![UsersGuide](https://img.shields.io/badge/users_guide-ja-blue)](https://imas.github.io/rdflint/)
+
 
 日本語版のユーザガイドも利用頂けます。(Japanese User Guide Available.)  
 [RDFデータのチェックツール「rdflint」の利用ガイド](https://imas.github.io/rdflint/)
@@ -25,6 +27,10 @@ rdflint has following functions.
 - SPARQL playground on your PC. (Interactive Mode)
 
 ## Getting Started
+
+### Work on Visual Studio Code
+
+Use [vscode-rdflint](vscode-rdflint/README.md)
 
 ### Work on your PC
 

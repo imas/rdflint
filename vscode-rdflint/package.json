@@ -13,13 +13,13 @@
 	],
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/imas/vscode-rdflint/issues"
+		"url": "https://github.com/imas/rdflint/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/imas/vscode-rdflint"
+		"url": "https://github.com/imas/rdflint"
 	},
-	"homepage": "https://github.com/imas/vscode-rdflint/blob/master/README.md",
+	"homepage": "https://github.com/imas/rdflint/blob/master/vscode-rdflint/README.md",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
