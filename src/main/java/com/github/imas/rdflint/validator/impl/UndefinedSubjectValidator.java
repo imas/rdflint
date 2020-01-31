@@ -36,11 +36,11 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
     resourceMap
         .put("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf/org/w3/rdf-syntax-ns.ttl");
     resourceMap.put("http://www.w3.org/2000/01/rdf-schema#", "rdf/org/w3/rdf-schema.ttl");
+    resourceMap.put("http://www.w3.org/ns/shacl#", "rdf/org/w3/shacl.ttl");
     resourceMap.put("http://schema.org/", "rdf/org/schema/3.4/all-layers.ttl");
     resourceMap.put("http://xmlns.com/foaf/0.1/", "rdf/com/xmlns/foaf/20140114.rdf");
     resourceMap.put("http://purl.org/dc/elements/1.1/", "rdf/org/purl/dcelements.ttl");
 
-    List<String> commonPrefixesList = new LinkedList<>();
     resourceMap.forEach((prefix, resourceName) -> {
       InputStream is = ClassLoader.getSystemResourceAsStream(resourceName);
       Graph g = Factory.createGraphMem();
@@ -50,10 +50,10 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
         RDFParser.source(is).base(prefix).lang(Lang.RDFXML).parse(g);
       }
       Set<String> sets = g.find().toList().stream()
+          .filter(t -> t.getSubject().isURI())
           .map(t -> t.getSubject().getURI())
           .collect(Collectors.toSet());
       commonSubjects.addAll(sets);
-      commonPrefixesList.add(prefix);
     });
 
     commonPrefixes = resourceMap.keySet().stream().toArray(String[]::new);
