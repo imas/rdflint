@@ -39,6 +39,16 @@ npm install
 
 Open this folder on Visual Studio Code, and Hit F5 Key to execute.
 
+In the case of try with Developing rdflint,  
+build jar and set environment variable ``RDFLINT_JAR`` like the following.
+
+```
+cd ../
+gradle shadowJar
+export RDFLINT_JAR=`pwd`/build/libs/rdflint.jar
+code vscode-rdflint/
+```
+
 ## License
 
 vscode-rdflint is released under the MIT License.
