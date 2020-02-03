@@ -48,6 +48,28 @@ $ java -jar rdflint-0.1.2.jar -targetdir example/dataset
 
 ``-targetdir`` parameter is location of target RDF files.
 
+### Work on GitHub Actions
+
+Make ``.github/workflows/ci.yml`` to your repository. Its contents is following.
+
+```
+name: CI
+on: pull_request
+jobs:
+  rdflint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - uses: imas/setup-rdflint@v1
+    - name: Run rdflint
+      run: rdflint
+```
+
+See [imas/setup-rdflint](https://github.com/imas/setup-rdflint) for more information.
+
 ### Work on CircleCI
 
 Make ``.circleci/config.yml`` to your repository. Its contents is following.
