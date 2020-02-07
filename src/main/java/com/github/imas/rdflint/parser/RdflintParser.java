@@ -1,12 +1,25 @@
 package com.github.imas.rdflint.parser;
 
 import com.github.imas.rdflint.LintProblem;
-import com.github.imas.rdflint.validator.RdfValidator;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
+import org.apache.jena.graph.Graph;
 
-public interface RdflintParser {
+public abstract class RdflintParser {
 
-  List<LintProblem> parse(String text);
+  public abstract void parse(Graph g, List<LintProblem> problems);
 
-  void addRdfValidator(RdfValidator validator);
+  public static RdflintParserBuilder create() {
+    return RdflintParserBuilder.create();
+  }
+
+  public static RdflintParserBuilder source(Path path) throws IOException {
+    return create().source(path);
+  }
+
+  public static RdflintParserBuilder fromString(String body) {
+    return create().fromString(body);
+  }
+
 }

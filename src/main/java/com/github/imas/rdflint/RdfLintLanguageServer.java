@@ -3,22 +3,17 @@ package com.github.imas.rdflint;
 import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.config.RdfLintParameters;
 import com.github.imas.rdflint.parser.RdflintParser;
-import com.github.imas.rdflint.parser.RdflintParserRdfxml;
-import com.github.imas.rdflint.parser.RdflintParserTurtle;
 import com.github.imas.rdflint.validator.RdfValidator;
 import com.github.imas.rdflint.validator.impl.ShaclValidator;
 import com.github.imas.rdflint.validator.impl.TrimValidator;
 import com.github.imas.rdflint.validator.impl.UndefinedSubjectValidator;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,9 +28,6 @@ import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFParser;
-import org.apache.jena.riot.RiotException;
-import org.apache.jena.riot.system.ErrorHandler;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -224,39 +216,6 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
 
   Map<String, List<Triple>> fileTripleSet;
 
-  static class MyErrorHandler implements ErrorHandler {
-
-    List<LintProblem> problems;
-
-    public MyErrorHandler(List<LintProblem> problems) {
-      this.problems = problems;
-    }
-
-    private void addDiagnostic(String message, long line, long col, ErrorLevel lv) {
-      problems.add(new LintProblem(
-          lv,
-          null,
-          new LintProblemLocation(line, 1, line, col),
-          null,
-          message));
-    }
-
-    @Override
-    public void warning(String message, long line, long col) {
-      addDiagnostic(message, line, col, ErrorLevel.WARN);
-    }
-
-    @Override
-    public void error(String message, long line, long col) {
-      addDiagnostic(message, line, col, ErrorLevel.ERROR);
-    }
-
-    @Override
-    public void fatal(String message, long line, long col) {
-      addDiagnostic(message, line, col, ErrorLevel.ERROR);
-    }
-  }
-
   void refreshFileTripleSet() {
     try {
       // load triple
@@ -277,28 +236,15 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
                 Lang lang = e.toString().endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
                 String text = sourceTextMap.get(convertFilePath2Uri(e.toString()));
                 List<Triple> lst;
+                List<LintProblem> problems = new LinkedList<>();
                 try {
-                  List<LintProblem> problems = new LinkedList<>();
-                  if (text != null) {
-                    InputStream prepareIn = new ByteArrayInputStream(
-                        text.getBytes(StandardCharsets.UTF_8));
-                    RDFParser.source(prepareIn)
-                        .lang(lang)
-                        .base(baseUri + subdir)
-                        .errorHandler(new MyErrorHandler(problems))
-                        .parse(g);
-                  } else {
-                    RDFParser.source(e.toString())
-                        .lang(lang)
-                        .base(baseUri + subdir)
-                        .errorHandler(new MyErrorHandler(problems))
-                        .parse(g);
-                  }
+                  (text != null ? RdflintParser.fromString(text) : RdflintParser.source(e))
+                      .lang(lang)
+                      .base(baseUri + subdir)
+                      .parse(g, problems);
                   lst = g.find().toList();
-                } catch (RiotException ex) {
+                } catch (IOException ex) {
                   lst = new LinkedList<>();
-                } finally {
-                  g.close();
                 }
                 return lst;
               }
@@ -324,21 +270,11 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
       String text = sourceTextMap.get(convertFilePath2Uri(changedFilePath));
       List<LintProblem> problems = new LinkedList<>();
       try {
-        if (text != null) {
-          InputStream prepareIn = new ByteArrayInputStream(
-              text.getBytes(StandardCharsets.UTF_8));
-          RDFParser.source(prepareIn)
-              .lang(lang)
-              .base(baseUri + subdir)
-              .errorHandler(new MyErrorHandler(problems))
-              .parse(g);
-        } else {
-          RDFParser.source(changedFilePath)
-              .lang(lang)
-              .base(baseUri + subdir)
-              .errorHandler(new MyErrorHandler(problems))
-              .parse(g);
-        }
+        (text != null ? RdflintParser.fromString(text)
+            : RdflintParser.source(Paths.get(changedFilePath)))
+            .lang(lang)
+            .base(baseUri + subdir)
+            .parse(g, problems);
         List<Triple> tripleSet = g.find().toList();
         String key = changedFilePath.substring(parentPath.length() + 1);
         fileTripleSet.put(key, tripleSet);
@@ -375,15 +311,19 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
       if (File.separatorChar == '\\') {
         subdir = filename.replaceAll("\\\\", "/");
       }
-      RdflintParser parser = uri.endsWith(".ttl")
-          ? new RdflintParserTurtle() : new RdflintParserRdfxml(baseUri + subdir);
-      validators.forEach(parser::addRdfValidator);
-      List<LintProblem> problems = parser.parse(source);
+
+      Graph g = Factory.createGraphMem();
+      List<LintProblem> problems = new LinkedList<>();
+      Lang lang = uri.endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
+      RdflintParser.fromString(source)
+          .lang(lang)
+          .base(baseUri + subdir)
+          .validators(validators)
+          .parse(g, problems);
       LintProblemSet problemSet = new LintProblemSet();
       problems.forEach(p -> {
-            problemSet.addProblem(filename, p);
-          }
-      );
+        problemSet.addProblem(filename, p);
+      });
 
       // suppress problems
       try {
