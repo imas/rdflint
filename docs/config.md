@@ -14,6 +14,7 @@ rdflintの設定ファイルの記載方法を説明します。
 - targetDir
 - originDir
 - baseUri
+- suppressPath
 - rules
    - リスト
       - name
@@ -82,6 +83,10 @@ generation:
 ## baseUri: 対象データセットURIのベース階層
 
 対象データセットURIのベース階層を指定します。
+
+## suppressPath: 無視する警告の定義ファイルのパス
+
+無視する警告を定義したファイルのパスを指定します。
 
 ## rules: カスタムクエリ検証のルール指定
 
