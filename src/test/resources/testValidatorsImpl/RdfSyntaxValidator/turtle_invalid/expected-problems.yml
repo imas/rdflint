@@ -1,5 +1,5 @@
 invalidturtle.ttl:
-  - key: com.github.imas.rdflint.validator.impl.parseError
+  - key: com.github.imas.rdflint.validator.impl.parseWarning
     line: 8
     column: 5
 

@@ -1,7 +1,6 @@
 package com.github.imas.rdflint.parser;
 
 import com.github.imas.rdflint.LintProblem;
-import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemLocation;
 import com.github.imas.rdflint.validator.RdfValidator;
 import java.io.ByteArrayInputStream;
@@ -45,8 +44,8 @@ public class RdflintParserTurtle extends RdflintParser {
         PrefixMap prefixMap, Context context, boolean checking, boolean strictMode,
         List<RdfValidator> validationModels, List<LintProblem> diagnosticList) {
       super(factory, errorHandler, resolver, prefixMap, context, checking, strictMode);
-      this.diagnosticList = diagnosticList;
       this.validationModels = validationModels;
+      this.diagnosticList = diagnosticList;
     }
 
     @Override
@@ -114,49 +113,26 @@ public class RdflintParserTurtle extends RdflintParser {
 
   @Override
   public void parse(Graph g, List<LintProblem> problems) {
+    List<LintProblem> diagnosticList = new LinkedList<>();
+    List<LintProblem> diagnosticErrorList = new LinkedList<>();
     try {
       // validation
       FactoryRDF factory = RiotLib.factoryRDF();
       IRIResolver resolver = IRIResolver.create();
       PrefixMap prefixMap = PrefixMapFactory.createForInput();
       Context context = new Context();
-      boolean checking = false;
+      boolean checking = true;
       boolean strict = false;
-      List<LintProblem> diagnosticErrorList = new LinkedList<>();
       RdflintParseProfile profile = new RdflintParseProfile(
           factory,
-          new ErrorHandler() {
-            private void addDiagnostic(String message, long line, long col,
-                LintProblem.ErrorLevel lv) {
-              diagnosticErrorList.add(new LintProblem(
-                  lv,
-                  null,
-                  new LintProblemLocation(line, 0, line, col),
-                  null, message));
-            }
-
-            @Override
-            public void warning(String message, long line, long col) {
-              addDiagnostic(message, line, col, ErrorLevel.WARN);
-            }
-
-            @Override
-            public void error(String message, long line, long col) {
-              addDiagnostic(message, line, col, ErrorLevel.ERROR);
-            }
-
-            @Override
-            public void fatal(String message, long line, long col) {
-              addDiagnostic(message, line, col, ErrorLevel.ERROR);
-            }
-          },
+          new RdflintParserErrorHandler(diagnosticErrorList),
           resolver,
           prefixMap,
           context,
           checking,
           strict,
           this.validators,
-          diagnosticErrorList);
+          diagnosticList);
 
       ReaderRIOTFactory r = RDFParserRegistry.getFactory(Lang.TURTLE);
       ReaderRIOT reader = r.create(Lang.TURTLE, profile);
@@ -164,22 +140,37 @@ public class RdflintParserTurtle extends RdflintParser {
       InputStream validateIn = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
       reader.read(validateIn, null, ct, StreamRDFLib.graph(g), context);
 
-      problems.addAll(diagnosticErrorList);
+      if (!diagnosticErrorList.isEmpty()) {
+        problems.addAll(diagnosticErrorList);
+        return;
+      }
+      problems.addAll(diagnosticList);
+
     } catch (RiotParseException ex) {
+      if (!diagnosticErrorList.isEmpty()) {
+        problems.addAll(diagnosticErrorList);
+        return;
+      }
       problems.add(new LintProblem(
           LintProblem.ErrorLevel.ERROR, null,
           new LintProblemLocation((int) ex.getLine(), (int) ex.getCol()),
           null, ex.getMessage()));
+
     } catch (Exception ex) {
+      if (!diagnosticErrorList.isEmpty()) {
+        problems.addAll(diagnosticErrorList);
+        return;
+      }
       String msg = ex.getMessage() != null ? ex.getMessage() : ex.toString();
       if (logger.isTraceEnabled()) {
         logger.trace("parse error: " + msg);
+        problems.add(new LintProblem(
+            LintProblem.ErrorLevel.ERROR, null,
+            new LintProblemLocation(1, 1),
+            null, msg));
       }
-      problems.add(new LintProblem(
-          LintProblem.ErrorLevel.ERROR, null,
-          new LintProblemLocation(1, 1),
-          null, msg));
     }
+
   }
 
 }

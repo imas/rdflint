@@ -70,30 +70,9 @@ public class RdflintParserRdfxml extends RdflintParser {
     Context context = new Context();
 
     List<LintProblem> parseProblemList = new LinkedList<>();
-    ReaderRIOTRDFXML2 reader = new ReaderRIOTRDFXML2(new ErrorHandler() {
-      private void addDiagnostic(String message, long line, long col, LintProblem.ErrorLevel lv) {
-        parseProblemList.add(new LintProblem(
-            lv,
-            null,
-            new LintProblemLocation(line, 1, line, col),
-            null, message));
-      }
-
-      @Override
-      public void warning(String message, long line, long col) {
-        addDiagnostic(message, line, col, LintProblem.ErrorLevel.WARN);
-      }
-
-      @Override
-      public void error(String message, long line, long col) {
-        addDiagnostic(message, line, col, LintProblem.ErrorLevel.ERROR);
-      }
-
-      @Override
-      public void fatal(String message, long line, long col) {
-        addDiagnostic(message, line, col, LintProblem.ErrorLevel.ERROR);
-      }
-    }, this.validators);
+    ReaderRIOTRDFXML2 reader = new ReaderRIOTRDFXML2(
+        new RdflintParserErrorHandler(parseProblemList),
+        this.validators);
 
     ContentType ct = Lang.RDFXML.getContentType();
     InputStream validateIn = new ByteArrayInputStream(this.text.getBytes(StandardCharsets.UTF_8));
@@ -107,15 +86,19 @@ public class RdflintParserRdfxml extends RdflintParser {
       problems.addAll(reader.getDiagnosticList());
 
     } catch (Exception ex) {
+      if (!parseProblemList.isEmpty()) {
+        problems.addAll(parseProblemList);
+        return;
+      }
       String msg = ex.getMessage() != null ? ex.getMessage() : ex.toString();
       if (logger.isTraceEnabled()) {
         logger.trace("parse error: " + msg);
+        problems.add(new LintProblem(
+            LintProblem.ErrorLevel.ERROR,
+            null,
+            new LintProblemLocation(1, 1),
+            null, msg));
       }
-      problems.add(new LintProblem(
-          LintProblem.ErrorLevel.ERROR,
-          null,
-          new LintProblemLocation(1, 1),
-          null, msg));
     }
   }
 
