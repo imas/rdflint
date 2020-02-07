@@ -2,8 +2,6 @@ package com.github.imas.rdflint;
 
 import com.github.imas.rdflint.config.RdfLintParameters;
 import com.github.imas.rdflint.parser.RdflintParser;
-import com.github.imas.rdflint.parser.RdflintParserRdfxml;
-import com.github.imas.rdflint.parser.RdflintParserTurtle;
 import com.github.imas.rdflint.validator.RdfValidator;
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +18,7 @@ import java.util.stream.Collectors;
 import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
 import org.apache.log4j.Logger;
 import org.reflections.Reflections;
@@ -102,16 +101,16 @@ public class ValidationRunner {
             subdir = filename.replaceAll("\\\\", "/");
           }
           String subBase = baseUri + subdir;
-          RdflintParser parser =
-              f.toString().endsWith(".ttl") ? new RdflintParserTurtle()
-                  : new RdflintParserRdfxml(subBase);
-          validators.forEach(parser::addRdfValidator);
+
+          Graph g = Factory.createGraphMem();
+          List<LintProblem> fileProblems = new LinkedList<>();
+          Lang lang = f.toString().endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
           try {
-            String sourceText = Files.lines(f, StandardCharsets.UTF_8)
-                .collect(Collectors.joining(System.getProperty("line.separator")));
-            List<LintProblem> fileProblems = parser.parse(sourceText);
-            String file = f.toString().substring(parentPath.length() + 1);
-            fileProblems.forEach(p -> problems.addProblem(file, p));
+            RdflintParser.source(f)
+                .lang(lang)
+                .base(subBase)
+                .validators(validators)
+                .parse(g, fileProblems);
             logger.trace(String.format(
                 "execute: Files.walk (path=%s,problemsize=%d)",
                 f.toString(),
@@ -119,6 +118,8 @@ public class ValidationRunner {
           } catch (IOException ex) {
             ex.printStackTrace(); // NOPMD
           }
+          String file = f.toString().substring(parentPath.length() + 1);
+          fileProblems.forEach(p -> problems.addProblem(file, p));
         });
 
     // validation: validateTripleSet

@@ -101,7 +101,6 @@ public class LintProblemLocation {
     this(-1, -1, -1, -1, null, triple);
   }
 
-
   public long getBeginLine() {
     return beginLine;
   }

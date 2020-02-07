@@ -6,15 +6,10 @@ import com.github.imas.rdflint.LintProblemLocation;
 import com.github.imas.rdflint.validator.RdfValidator;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.jena.atlas.web.ContentType;
-import org.apache.jena.datatypes.DatatypeFormatException;
-import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -36,10 +31,7 @@ import org.apache.jena.riot.tokens.Token;
 import org.apache.jena.riot.tokens.TokenType;
 import org.apache.jena.sparql.util.Context;
 
-//import com.github.imas.rdflint.LintProblemLocation;
-//import com.github.imas.rdflint.validator.RdflintValidationModel;
-
-public class RdflintParserTurtle extends AbstractRdflintParser {
+public class RdflintParserTurtle extends RdflintParser {
 
   static class RdflintParseProfile extends ParserProfileStd {
 
@@ -47,18 +39,11 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
     List<RdfValidator> validationModels;
 
     public RdflintParseProfile(FactoryRDF factory, ErrorHandler errorHandler, IRIResolver resolver,
-        PrefixMap prefixMap, Context context, boolean checking, boolean strictMode) {
+        PrefixMap prefixMap, Context context, boolean checking, boolean strictMode,
+        List<RdfValidator> validationModels, List<LintProblem> diagnosticList) {
       super(factory, errorHandler, resolver, prefixMap, context, checking, strictMode);
-      diagnosticList = new LinkedList<>();
-      validationModels = new LinkedList<>();
-    }
-
-    public List<LintProblem> getDiagnosticList() {
-      return diagnosticList;
-    }
-
-    public void addValidationModel(RdfValidator m) {
-      validationModels.add(m);
+      this.diagnosticList = diagnosticList;
+      this.validationModels = validationModels;
     }
 
     @Override
@@ -66,11 +51,9 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
       validationModels.forEach(m -> {
         if (object.isLiteral()) {
           int length = object.getLiteralLexicalForm().length();
-          List<LintProblem> diagnostic = m
-              .validateTriple(subject, predicate, object,
-                  (int) line, (int) col,
-                  (int) line, (int) col + length);
-          diagnosticList.addAll(diagnostic);
+          diagnosticList.addAll(m.validateTriple(
+              subject, predicate, object,
+              (int) line, (int) col, (int) line, (int) col + length));
         }
       });
       return super.createTriple(subject, predicate, object, line, col);
@@ -114,8 +97,20 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
     }
   }
 
+  String text;
+  List<RdfValidator> validators;
+
+  /**
+   * constructor.
+   */
+  public RdflintParserTurtle(String text, List<RdfValidator> validators) {
+    super();
+    this.text = text;
+    this.validators = validators;
+  }
+
   @Override
-  public List<LintProblem> parse(String text) {
+  public void parse(Graph g, List<LintProblem> problems) {
     try {
       // validation
       FactoryRDF factory = RiotLib.factoryRDF();
@@ -156,52 +151,27 @@ public class RdflintParserTurtle extends AbstractRdflintParser {
           prefixMap,
           context,
           checking,
-          strict);
+          strict,
+          this.validators,
+          diagnosticErrorList);
 
-      this.getValidationModelList().forEach(profile::addValidationModel);
-
-      Graph g = Factory.createGraphMem();
       ReaderRIOTFactory r = RDFParserRegistry.getFactory(Lang.TURTLE);
       ReaderRIOT reader = r.create(Lang.TURTLE, profile);
       ContentType ct = Lang.TURTLE.getContentType();
-
       InputStream validateIn = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
       reader.read(validateIn, null, ct, StreamRDFLib.graph(g), context);
 
-      if (!diagnosticErrorList.isEmpty()) {
-        return diagnosticErrorList;
-      }
-      return profile.getDiagnosticList();
+      problems.addAll(diagnosticErrorList);
     } catch (RiotParseException ex) {
-      int line = (int) ex.getLine();
-      int col = (int) ex.getCol();
-      return Collections.singletonList(
-          new LintProblem(
-              LintProblem.ErrorLevel.ERROR,
-              null,
-              new LintProblemLocation(line, col),
-              null, ex.getMessage()));
-    } catch (DatatypeFormatException ex) {
-      int line = 1;
-      int col = 1;
-      return Collections.singletonList(
-          new LintProblem(
-              LintProblem.ErrorLevel.ERROR,
-              null,
-              new LintProblemLocation(line, col),
-              null, ex.getMessage()));
+      problems.add(new LintProblem(
+          LintProblem.ErrorLevel.ERROR, null,
+          new LintProblemLocation((int) ex.getLine(), (int) ex.getCol()),
+          null, ex.getMessage()));
     } catch (Exception ex) {
-      StringWriter w = new StringWriter();
-      PrintWriter p = new PrintWriter(w);
-      ex.printStackTrace(p);
-      int line = 1;
-      int col = 1;
-      return Collections.singletonList(
-          new LintProblem(
-              LintProblem.ErrorLevel.ERROR,
-              null,
-              new LintProblemLocation(line, col),
-              null, ex.getMessage()));
+      problems.add(new LintProblem(
+          LintProblem.ErrorLevel.ERROR, null,
+          new LintProblemLocation(1, 1),
+          null, ex.getMessage()));
     }
   }
 
