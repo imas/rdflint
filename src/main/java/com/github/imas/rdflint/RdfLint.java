@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -27,6 +30,30 @@ public class RdfLint {
 
   public static final String VERSION = "0.1.2";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
+
+  protected static final List<String> CONFIG_SEARCH_PATH = Collections.unmodifiableList(
+      new ArrayList<String>() {
+        {
+          add("rdflint-config.yml");
+          add(".rdflint-config.yml");
+          add(".rdflint/rdflint-config.yml");
+          add("config/rdflint/rdflint-config.yml");
+          add(".circleci/rdflint-config.yml");
+        }
+      }
+  );
+
+  protected static final List<String> SUPPRESS_SEARCH_PATH = Collections.unmodifiableList(
+      new ArrayList<String>() {
+        {
+          add("rdflint-suppress.yml");
+          add(".rdflint-suppress.yml");
+          add(".rdflint/rdflint-suppress.yml");
+          add("config/rdflint/rdflint-suppress.yml");
+          add(".circleci/rdflint-suppress.yml");
+        }
+      }
+  );
 
   /**
    * rdflint entry point.
@@ -91,10 +118,7 @@ public class RdfLint {
     String parentPath = targetDir != null ? targetDir : ".";
     String configPath = cmd.getOptionValue("config");
     if (configPath == null) {
-      for (String fn : new String[]{
-          "rdflint-config.yml",
-          ".rdflint-config.yml",
-          ".circleci/rdflint-config.yml"}) {
+      for (String fn : CONFIG_SEARCH_PATH) {
         Path path = Paths.get(parentPath + "/" + fn);
         if (Files.exists(path)) {
           configPath = path.toAbsolutePath().toString();
@@ -129,10 +153,7 @@ public class RdfLint {
       RdfLintParameters params, CommandLine cmd, String targetDir, String parentPath) {
     String suppressPath = cmd.getOptionValue("suppress");
     if (suppressPath == null) {
-      for (String fn : new String[]{
-          "rdflint-suppress.yml",
-          ".rdflint-suppress.yml",
-          ".circleci/rdflint-suppress.yml"}) {
+      for (String fn : SUPPRESS_SEARCH_PATH) {
         Path path = Paths.get(parentPath + "/" + fn);
         if (Files.exists(path)) {
           suppressPath = path.toAbsolutePath().toString();
