@@ -1,0 +1,3 @@
+undefinedsubject_url.ttl:
+  - key: com.github.imas.rdflint.validator.impl.undefinedUri
+    node: http://www.w3.org/2002/07/owl#Ontolog

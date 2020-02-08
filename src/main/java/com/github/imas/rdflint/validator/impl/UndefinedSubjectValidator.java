@@ -3,10 +3,11 @@ package com.github.imas.rdflint.validator.impl;
 import com.github.imas.rdflint.LintProblem;
 import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import com.github.imas.rdflint.LintProblemLocation;
+import com.github.imas.rdflint.config.RdfLintParameters;
 import com.github.imas.rdflint.validator.AbstractRdfValidator;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,44 +20,84 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RDFParserBuilder;
 import org.apache.log4j.Logger;
 
 public class UndefinedSubjectValidator extends AbstractRdfValidator {
 
   private static final Logger logger = Logger.getLogger(UndefinedSubjectValidator.class.getName());
 
-  private static String[] commonPrefixes;
-  private static Set<String> commonSubjects = new HashSet<>();
+  private static Map<String, Set<String>> commonStartswithSubjectsMap = new ConcurrentHashMap<>();
+  private static Map<String, Set<String>> additionalUrlSubjectsMap = new ConcurrentHashMap<>();
+  private Map<String, Set<String>> additionalStartswithSubjectsMap = new ConcurrentHashMap<>();
+
   private String baseUri;
   private Set<String> subjects;
 
   // prepare subject-set of common-resource
   static {
-    Map<String, String> resourceMap = new ConcurrentHashMap<>();
-    resourceMap
-        .put("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf/org/w3/rdf-syntax-ns.ttl");
-    resourceMap.put("http://www.w3.org/2000/01/rdf-schema#", "rdf/org/w3/rdf-schema.ttl");
-    resourceMap.put("http://www.w3.org/ns/shacl#", "rdf/org/w3/shacl.ttl");
-    resourceMap.put("http://schema.org/", "rdf/org/schema/3.4/all-layers.ttl");
-    resourceMap.put("http://xmlns.com/foaf/0.1/", "rdf/com/xmlns/foaf/20140114.rdf");
-    resourceMap.put("http://purl.org/dc/elements/1.1/", "rdf/org/purl/dcelements.ttl");
+    String[] resourceMap = {
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns# rdf/org/w3/rdf-syntax-ns.ttl",
+        "http://www.w3.org/2000/01/rdf-schema# rdf/org/w3/rdf-schema.ttl",
+        "http://www.w3.org/ns/shacl# rdf/org/w3/shacl.ttl",
+        "http://schema.org/ rdf/org/schema/3.4/all-layers.ttl",
+        "http://xmlns.com/foaf/0.1/ rdf/com/xmlns/foaf/20140114.rdf",
+        "http://purl.org/dc/elements/1.1/ rdf/org/purl/dcelements.ttl",
+    };
+    for (String resourceString : resourceMap) {
+      String startswith = resourceString.split(" ")[0];
+      String resourceName = resourceString.split(" ")[1];
 
-    resourceMap.forEach((prefix, resourceName) -> {
       InputStream is = ClassLoader.getSystemResourceAsStream(resourceName);
-      Graph g = Factory.createGraphMem();
-      if (resourceName.endsWith("ttl")) {
-        RDFParser.source(is).base(prefix).lang(Lang.TTL).parse(g);
-      } else {
-        RDFParser.source(is).base(prefix).lang(Lang.RDFXML).parse(g);
+      Lang lang = resourceName.endsWith("ttl") ? Lang.TTL : Lang.RDFXML;
+      Set<String> sets = loadSubjects(RDFParser.source(is), startswith, lang);
+      if (sets != null) {
+        commonStartswithSubjectsMap.put(startswith, sets);
       }
-      Set<String> sets = g.find().toList().stream()
+    }
+  }
+
+  @Override
+  public void setParameters(RdfLintParameters params) {
+    super.setParameters(params);
+
+    List<Map<String, String>> paramList = getValidationParameterMapList();
+    for (Map<String, String> map : paramList) {
+      String url = map.get("url");
+      String startswith = map.get("startswith");
+      String langtype = map.get("langtype");
+
+      // skip loaded url
+      if (additionalUrlSubjectsMap.get(url) != null) {
+        additionalStartswithSubjectsMap.put(startswith, additionalUrlSubjectsMap.get(url));
+        continue;
+      }
+      Lang lang = Lang.TURTLE;
+      if ("rdfxml".equalsIgnoreCase(langtype) || "rdf".equalsIgnoreCase(langtype)) {
+        lang = Lang.RDFXML;
+      }
+      Set<String> sets = loadSubjects(RDFParser.source(url), startswith, lang);
+      if (sets != null) {
+        additionalStartswithSubjectsMap.put(startswith, sets);
+        additionalUrlSubjectsMap.put(url, sets);
+      }
+    }
+  }
+
+  private static Set<String> loadSubjects(RDFParserBuilder builder, String startswith, Lang lang) {
+    Graph g = Factory.createGraphMem();
+    builder.base(startswith).lang(lang).parse(g);
+    try {
+      return g.find().toList().stream()
           .filter(t -> t.getSubject().isURI())
           .map(t -> t.getSubject().getURI())
           .collect(Collectors.toSet());
-      commonSubjects.addAll(sets);
-    });
-
-    commonPrefixes = resourceMap.keySet().stream().toArray(String[]::new);
+    } catch (Exception ex) {
+      logger.trace(String.format("loadSubjects: skip %s", startswith));
+    } finally {
+      g.close();
+    }
+    return null;
   }
 
   @Override
@@ -81,10 +122,14 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
     boolean undefinedFlag = false;
 
     if (node != null && node.isURI()) {
-      for (String prefix : commonPrefixes) {
-        if (node.getURI().startsWith(prefix) && !commonSubjects.contains(node.getURI())) {
-          undefinedFlag = true;
-          break;
+      for (Map<String, Set<String>> map :
+          Arrays.asList(commonStartswithSubjectsMap, additionalStartswithSubjectsMap)) {
+        for (Map.Entry<String, Set<String>> entry : map.entrySet()) {
+          if (node.getURI().startsWith(entry.getKey())
+              && !entry.getValue().contains(node.getURI())) {
+            undefinedFlag = true;
+            break;
+          }
         }
       }
       if (node.getURI().startsWith(baseUri) && !subjects.contains(node.getURI())) {
