@@ -120,10 +120,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     // initialize rdflint
     String rootPath = convertUri2FilePath(params.getRootUri());
     String configPath = "";
-    for (String fn : new String[]{
-        "rdflint-config.yml",
-        ".rdflint-config.yml",
-        ".circleci/rdflint-config.yml"}) {
+    for (String fn : RdfLint.CONFIG_SEARCH_PATH) {
       Path path = Paths.get(rootPath + "/" + fn);
       if (Files.exists(path)) {
         configPath = path.toAbsolutePath().toString();
@@ -136,10 +133,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
       rdflintParams.setTargetDir(rootPath);
       rdflintParams.setOutputDir(rootPath);
       if (rdflintParams.getSuppressPath() == null) {
-        for (String fn : new String[]{
-            "rdflint-suppress.yml",
-            ".rdflint-suppress.yml",
-            ".circleci/rdflint-suppress.yml"}) {
+        for (String fn : RdfLint.SUPPRESS_SEARCH_PATH) {
           Path path = Paths.get(rootPath + "/" + fn);
           if (Files.exists(path)) {
             rdflintParams.setSuppressPath(path.toAbsolutePath().toString());
