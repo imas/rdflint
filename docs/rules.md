@@ -24,7 +24,15 @@ rdfやturtleファイルの文法が正しいかを検証します。
 以下の主語がチェックの対象になります。
 
 - 設定ファイル``baseUri``で指定された階層以下の主語
-- schema.orgで定義されている主語
+- 以下で定義されている主語
+   - http://www.w3.org/1999/02/22-rdf-syntax-ns#
+   - http://www.w3.org/2000/01/rdf-schema#
+   - http://www.w3.org/ns/shacl#
+   - http://schema.org/
+   - http://xmlns.com/foaf/0.1/
+   - http://purl.org/dc/elements/1.1/
+
+ｰ 設定ファイルで指定したデータセットの主語
 
 ## カスタムクエリ検証
 
