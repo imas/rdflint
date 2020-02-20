@@ -1,7 +1,7 @@
 {
 	"name": "vscode-rdflint",
 	"displayName": "RDF language support via rdflint",
-	"version": "0.0.4",
+	"version": "0.1.3",
 	"publisher": "takemikami",
 	"description": "RDF language support via rdflint",
 	"author": {
