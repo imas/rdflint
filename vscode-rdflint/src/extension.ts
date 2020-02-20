@@ -8,7 +8,7 @@ import {
 	Executable
 } from 'vscode-languageclient';
 
-const RDFLINT_VER = "0.1.2";
+const RDFLINT_VER = "0.1.3";
 let client: LanguageClient;
 
 export function activate(context: vscode.ExtensionContext) {

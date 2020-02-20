@@ -28,7 +28,7 @@ import org.yaml.snakeyaml.Yaml;
 
 public class RdfLint {
 
-  public static final String VERSION = "0.1.2";
+  public static final String VERSION = "0.1.3";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
 
   protected static final List<String> CONFIG_SEARCH_PATH = Collections.unmodifiableList(
