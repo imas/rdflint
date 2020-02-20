@@ -28,6 +28,11 @@ rdflintの設定ファイルの記載方法を説明します。
       - template
       - output
 - validation
+   - undefinedSubject
+      - リスト
+         - url
+         - startswith
+         - langtype
    - fileEncoding
       - リスト
          - target
@@ -37,6 +42,7 @@ rdflintの設定ファイルの記載方法を説明します。
          - indent_size
          - insert_final_newline
          - trim_trailing_whitespace
+
 
 設定ファイルの例
 
@@ -112,6 +118,18 @@ validation-fileEncoding配下に、以下のkey-valueを持つマップのリス
 - indent_size: インデントサイズ
 - insert_final_newline: ファイル末尾改行の要否
 - trim_trailing_whitespace: 行末空白削除の要否
+
+## validation - undefinedSubject: 未定義主語の使用検証のルール指定
+
+未定義主語の使用検証のルール指定を指定します。
+
+validation-undefinedSubject配下に、以下のkey-valueを持つマップのリストを指定します。  
+この指定によって、未定義主語の使用検証に使用するデータセットを追加することが出来ます。
+
+- url: データセットを定義するファイルの格納先URL
+- startswith: 対象データセットのURL,  
+   ここで指定した文字列で始まる(前方一致する)URLはurlで指定したファイルに定義されている必要があります
+- langtype: urlで指定したファイルの形式, turtle または rdfxml
 
 ## generation: RDFファイル生成の設定
 
