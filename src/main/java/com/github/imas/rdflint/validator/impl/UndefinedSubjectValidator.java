@@ -132,7 +132,8 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
           }
         }
       }
-      if (node.getURI().startsWith(baseUri) && !subjects.contains(node.getURI())) {
+      if (baseUri != null
+          && node.getURI().startsWith(baseUri) && !subjects.contains(node.getURI())) {
         undefinedFlag = true;
       }
     }

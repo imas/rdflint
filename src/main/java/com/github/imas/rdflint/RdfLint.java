@@ -199,11 +199,12 @@ public class RdfLint {
       return new RdfLintParameters();
     }
     Yaml yaml = new Yaml();
-    return yaml.loadAs(
+    RdfLintParameters params = yaml.loadAs(
         new InputStreamReader(
             Files.newInputStream(Paths.get(new File(configPath).getCanonicalPath())),
             StandardCharsets.UTF_8),
         RdfLintParameters.class);
+    return params != null ? params : new RdfLintParameters();
   }
 
   /**
