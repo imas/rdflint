@@ -1,6 +1,7 @@
 package com.github.imas.rdflint;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,7 +19,7 @@ public class RdfLintTest {
   @Test
   public void loadConfig() throws Exception {
     RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
+    RdfLintParameters params = lint.loadConfig(getParentPath("config/rdflint-config-ok.yml"));
 
     assertEquals("https://sparql.crssnky.xyz/imasrdf/", params.getBaseUri());
     assertEquals("valid.rdf", params.getRules().get(0).getTarget());
@@ -33,6 +34,17 @@ public class RdfLintTest {
     assertEquals("https://sparql.crssnky.xyz/imasrdf/", params.getBaseUri());
     assertEquals("value", params.getValidation().get("hoge"));
   }
+
+  @Test
+  public void loadConfigEmpty() throws Exception {
+    RdfLint lint = new RdfLint();
+    RdfLintParameters params = lint
+        .loadConfig(getParentPath("config/rdflint-config-empty.yml"));
+
+    assertNotNull(params);
+    assertNull(params.getBaseUri());
+  }
+
 
   @Test
   public void degradeCheckOk() throws Exception {

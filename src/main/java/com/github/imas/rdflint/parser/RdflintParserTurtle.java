@@ -30,8 +30,11 @@ import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.riot.tokens.Token;
 import org.apache.jena.riot.tokens.TokenType;
 import org.apache.jena.sparql.util.Context;
+import org.apache.log4j.Logger;
 
 public class RdflintParserTurtle extends RdflintParser {
+
+  private static final Logger logger = Logger.getLogger(RdflintParserTurtle.class.getName());
 
   static class RdflintParseProfile extends ParserProfileStd {
 
@@ -168,10 +171,14 @@ public class RdflintParserTurtle extends RdflintParser {
           new LintProblemLocation((int) ex.getLine(), (int) ex.getCol()),
           null, ex.getMessage()));
     } catch (Exception ex) {
+      String msg = ex.getMessage() != null ? ex.getMessage() : ex.toString();
+      if (logger.isTraceEnabled()) {
+        logger.trace("parse error: " + msg);
+      }
       problems.add(new LintProblem(
           LintProblem.ErrorLevel.ERROR, null,
           new LintProblemLocation(1, 1),
-          null, ex.getMessage()));
+          null, msg));
     }
   }
 

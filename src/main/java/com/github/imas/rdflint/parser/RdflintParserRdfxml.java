@@ -42,10 +42,13 @@ import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.util.Context;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 public class RdflintParserRdfxml extends RdflintParser {
+
+  private static final Logger logger = Logger.getLogger(RdflintParserRdfxml.class.getName());
 
   String text;
   List<RdfValidator> validators;
@@ -104,11 +107,15 @@ public class RdflintParserRdfxml extends RdflintParser {
       problems.addAll(reader.getDiagnosticList());
 
     } catch (Exception ex) {
+      String msg = ex.getMessage() != null ? ex.getMessage() : ex.toString();
+      if (logger.isTraceEnabled()) {
+        logger.trace("parse error: " + msg);
+      }
       problems.add(new LintProblem(
           LintProblem.ErrorLevel.ERROR,
           null,
           new LintProblemLocation(1, 1),
-          null, ex.getMessage()));
+          null, msg));
     }
   }
 
