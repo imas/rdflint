@@ -68,7 +68,8 @@ public class RdfLint {
     options.addOption("origindir", true, "Origin Dataset Directory Path");
     options.addOption("config", true, "Configuration file Path");
     options.addOption("suppress", true, "Suppress problems file Path");
-    options.addOption("minErrorLevel", true, "Minimal logging level which is considered an error, e.g. INFO, WARN, ERROR");
+    options.addOption("minErrorLevel", true,
+        "Minimal logging level which is considered an error, e.g. INFO, WARN, ERROR");
     options.addOption("i", false, "Interactive mode");
     options.addOption("ls", false, "Language Server mode (experimental)");
     options.addOption("h", false, "Print usage");
