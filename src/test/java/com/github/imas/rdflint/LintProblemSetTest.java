@@ -1,16 +1,16 @@
 package com.github.imas.rdflint;
 
-import com.github.imas.rdflint.validator.RdfValidator;
-import org.junit.Test;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import com.github.imas.rdflint.validator.RdfValidator;
+import org.junit.Test;
 
 public class LintProblemSetTest {
 
   @Test public void minimalErrorLevelCorrectlyUsed() {
     LintProblemSet problemSet = new LintProblemSet();
-    RdfValidator v= null;
+    RdfValidator v = null;
     LintProblemLocation location = null;
     String key = null;
     String fileName = "";
