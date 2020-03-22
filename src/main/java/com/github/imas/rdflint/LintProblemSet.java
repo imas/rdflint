@@ -30,16 +30,20 @@ public class LintProblemSet {
   /**
    * return error size.
    */
-  public long errorSize() {
+  long errorSize(ErrorLevel minErrorLevel) {
     return problemSet.values().stream()
         .mapToLong(lp -> lp.stream()
-            .filter(t -> t.getLevel() == ErrorLevel.ERROR || t.getLevel() == ErrorLevel.WARN)
+            .filter(t -> t.getLevel().compareTo(minErrorLevel) <= 0)
             .count())
         .sum();
   }
 
   public boolean hasError() {
-    return errorSize() > 0;
+    return errorSize(ErrorLevel.WARN) > 0;
+  }
+
+  public boolean hasProblemOfLevelOrWorse(ErrorLevel minErrorLevel) {
+    return errorSize(minErrorLevel) > 0;
   }
 
   public Map<String, List<LintProblem>> getProblemSet() {
