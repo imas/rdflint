@@ -32,47 +32,51 @@ public class InteractiveModeTest {
 
   @Test
   public void interactiveCommand() throws Exception {
-    RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint.loadConfig(getParentPath("config_ok/rdflint-config.yml"));
-    params.setTargetDir(getParentPath("config_ok/"));
+    RdfLintParameters params = ConfigurationLoader
+        .loadConfig(getParentPath("config_ok/rdflint-config.yml"));
+    Map<String, String> cmdOptions = new HashMap<>();
+    cmdOptions.put("targetdir", getParentPath("config_ok/"));
+    ConfigurationLoader
+        .setupParameters(params, cmdOptions.get("targetdir"), getParentPath(""), cmdOptions);
     Model m = DatasetLoader.loadRdfSet(params, params.getTargetDir());
+    RdfLint lint = new RdfLint();
 
     // command
     ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
     assertFalse(":exit", InteractiveMode.interactiveCommand(byteOut, ":exit",
-        params, params.getTargetDir(), m));
+        params, cmdOptions, m));
     assertEquals("exit out", 0, byteOut.toString("UTF-8").length());
 
     assertEquals("reload out",
-        0, interactiveCommandCall(":reload", lint, params, m).length());
+        0, interactiveCommandCall(":reload", lint, params, cmdOptions, m).length());
     assertEquals("check out",
-        0, interactiveCommandCall(":check", lint, params, m).length());
+        0, interactiveCommandCall(":check", lint, params, cmdOptions, m).length());
     assertThat("help out",
-        interactiveCommandCall(":help", lint, params, m),
+        interactiveCommandCall(":help", lint, params, cmdOptions, m),
         CoreMatchers.containsString("help"));
     assertNotEquals("unknown out",
-        0, interactiveCommandCall(":unknown", lint, params, m).length());
+        0, interactiveCommandCall(":unknown", lint, params, cmdOptions, m).length());
 
     // query
     assertThat("select out",
-        interactiveCommandCall("select ?s ?p ?o where {?s ?p ?o}", lint, params, m),
+        interactiveCommandCall("select ?s ?p ?o where {?s ?p ?o}", lint, params, cmdOptions, m),
         CoreMatchers.containsString("familyName"));
     assertThat("describe out",
         interactiveCommandCall("describe <https://sparql.crssnky.xyz/imasrdf/something>",
-            lint, params, m),
+            lint, params, cmdOptions, m),
         CoreMatchers.containsString("\"familyName\"@ja"));
     assertThat("ask out",
         interactiveCommandCall("ask {<https://sparql.crssnky.xyz/imasrdf/something> ?p ?o}", lint,
-            params, m),
+            params, cmdOptions, m),
         CoreMatchers.containsString("true"));
   }
 
   private String interactiveCommandCall(
-      String line, RdfLint lint, RdfLintParameters params, Model m)
+      String line, RdfLint lint, RdfLintParameters params, Map<String, String> cmdOptions, Model m)
       throws IOException {
     ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
     boolean rtn = InteractiveMode
-        .interactiveCommand(byteOut, line, params, params.getTargetDir(), m);
+        .interactiveCommand(byteOut, line, params, cmdOptions, m);
     assertTrue(line, rtn);
     return byteOut.toString("UTF-8");
   }

@@ -1,13 +1,11 @@
 package com.github.imas.rdflint;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.github.imas.rdflint.config.RdfLintParameters;
-import org.apache.commons.cli.CommandLine;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 
 public class RdfLintTest {
@@ -15,36 +13,6 @@ public class RdfLintTest {
   public String getParentPath(String testSet) {
     return this.getClass().getClassLoader().getResource("testRDFs/" + testSet).getPath();
   }
-
-  @Test
-  public void loadConfig() throws Exception {
-    RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint.loadConfig(getParentPath("config/rdflint-config-ok.yml"));
-
-    assertEquals("https://sparql.crssnky.xyz/imasrdf/", params.getBaseUri());
-    assertEquals("valid.rdf", params.getRules().get(0).getTarget());
-  }
-
-  @Test
-  public void loadConfigValid() throws Exception {
-    RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint
-        .loadConfig(getParentPath("config/rdflint-config-validation.yml"));
-
-    assertEquals("https://sparql.crssnky.xyz/imasrdf/", params.getBaseUri());
-    assertEquals("value", params.getValidation().get("hoge"));
-  }
-
-  @Test
-  public void loadConfigEmpty() throws Exception {
-    RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint
-        .loadConfig(getParentPath("config/rdflint-config-empty.yml"));
-
-    assertNotNull(params);
-    assertNull(params.getBaseUri());
-  }
-
 
   @Test
   public void degradeCheckOk() throws Exception {
@@ -75,7 +43,8 @@ public class RdfLintTest {
   @Test
   public void generationRuleOk() throws Exception {
     RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint.loadConfig(getParentPath("config_genok/rdflint-config.yml"));
+    RdfLintParameters params = ConfigurationLoader
+        .loadConfig(getParentPath("config_genok/rdflint-config.yml"));
 
     LintProblemSet problems = lint.lintRdfDataSet(params, getParentPath("config_genok"));
     LintProblemFormatter.out(System.out, problems);
@@ -85,14 +54,14 @@ public class RdfLintTest {
 
   @Test
   public void setupParametersFromCmdOption() throws Exception {
-    CommandLine cmd = mock(CommandLine.class);
-    when(cmd.getOptionValue("outputdir")).thenReturn("path/outputdir");
-    when(cmd.getOptionValue("baseuri")).thenReturn("http://example.com/base#");
-    when(cmd.getOptionValue("origindir")).thenReturn("path/origindir");
-
+    Map<String, String> cmdOptions = new HashMap<>();
+    cmdOptions.put("outputdir", "path/outputdir");
+    cmdOptions.put("baseuri", "http://example.com/base#");
+    cmdOptions.put("origindir", "path/origindir");
     RdfLintParameters params = new RdfLintParameters();
 
-    RdfLint.setupParameters(params, cmd, "path/targetdir", "path/parentdir");
+    ConfigurationLoader
+        .setupParameters(params, "path/targetdir", "path/parentdir", cmdOptions);
 
     assertEquals("getTargetDir", "path/targetdir", params.getTargetDir());
     assertEquals("getOutputDir", "path/outputdir", params.getOutputDir());
@@ -102,11 +71,11 @@ public class RdfLintTest {
 
   @Test
   public void setupParametersDefault() throws Exception {
-    CommandLine cmd = mock(CommandLine.class);
+    Map<String, String> cmdOptions = new HashMap<>();
 
     RdfLintParameters params = new RdfLintParameters();
 
-    RdfLint.setupParameters(params, cmd, null, "path/parentdir");
+    ConfigurationLoader.setupParameters(params, null, "path/parentdir", cmdOptions);
 
     assertEquals("getTargetDir", ".", params.getTargetDir());
     assertEquals("getOutputDir", ".", params.getOutputDir());

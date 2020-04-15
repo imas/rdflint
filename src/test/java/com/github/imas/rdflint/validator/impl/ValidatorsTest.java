@@ -7,8 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
+import com.github.imas.rdflint.ConfigurationLoader;
 import com.github.imas.rdflint.LintProblemSet;
-import com.github.imas.rdflint.RdfLint;
 import com.github.imas.rdflint.ValidationRunner;
 import com.github.imas.rdflint.config.RdfLintParameters;
 import com.github.imas.rdflint.validator.RdfValidator;
@@ -53,8 +53,7 @@ public class ValidatorsTest {
 
     try {
       // load rdflint-config.yml
-      RdfLint rdflint = new RdfLint();
-      RdfLintParameters params = rdflint.loadConfig(conf);
+      RdfLintParameters params = ConfigurationLoader.loadConfig(conf);
       if (new File(suppress).exists()) {
         params.setSuppressPath(suppress);
       }

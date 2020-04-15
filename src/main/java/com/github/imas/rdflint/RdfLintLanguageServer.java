@@ -120,7 +120,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
     // initialize rdflint
     String rootPath = convertUri2FilePath(params.getRootUri());
     String configPath = "";
-    for (String fn : RdfLint.CONFIG_SEARCH_PATH) {
+    for (String fn : ConfigurationLoader.CONFIG_SEARCH_PATH) {
       Path path = Paths.get(rootPath + "/" + fn);
       if (Files.exists(path)) {
         configPath = path.toAbsolutePath().toString();
@@ -128,12 +128,11 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
       }
     }
     try {
-      RdfLint lint = new RdfLint();
-      rdflintParams = lint.loadConfig(configPath);
+      rdflintParams = ConfigurationLoader.loadConfig(configPath);
       rdflintParams.setTargetDir(rootPath);
       rdflintParams.setOutputDir(rootPath);
       if (rdflintParams.getSuppressPath() == null) {
-        for (String fn : RdfLint.SUPPRESS_SEARCH_PATH) {
+        for (String fn : ConfigurationLoader.SUPPRESS_SEARCH_PATH) {
           Path path = Paths.get(rootPath + "/" + fn);
           if (Files.exists(path)) {
             rdflintParams.setSuppressPath(path.toAbsolutePath().toString());

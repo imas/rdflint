@@ -77,4 +77,15 @@ public class RdfLintParameters {
   public void setRules(List<CustomRule> rules) {
     this.rules = rules;
   }
+
+  public static void copyProperties(RdfLintParameters src, RdfLintParameters dst) {
+    dst.setTargetDir(src.getTargetDir());
+    dst.setOutputDir(src.getOutputDir());
+    dst.setOriginDir(src.getOriginDir());
+    dst.setBaseUri(src.getBaseUri());
+    dst.setSuppressPath(src.getSuppressPath());
+    dst.setRules(src.getRules());
+    dst.setGeneration(src.getGeneration());
+    dst.setValidation(src.getValidation());
+  }
 }
