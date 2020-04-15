@@ -1,0 +1,6 @@
+baseUri: http://example.com/rdflint#
+validation:
+  undefinedSubject:
+    - url: file:///tmp/notfount
+      startswith: http://www.w3.org/2002/07/owl#
+      langtype: turtle

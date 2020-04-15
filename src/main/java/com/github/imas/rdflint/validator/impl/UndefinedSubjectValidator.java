@@ -86,14 +86,14 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
 
   private static Set<String> loadSubjects(RDFParserBuilder builder, String startswith, Lang lang) {
     Graph g = Factory.createGraphMem();
-    builder.base(startswith).lang(lang).parse(g);
     try {
+      builder.base(startswith).lang(lang).parse(g);
       return g.find().toList().stream()
           .filter(t -> t.getSubject().isURI())
           .map(t -> t.getSubject().getURI())
           .collect(Collectors.toSet());
     } catch (Exception ex) {
-      logger.trace(String.format("loadSubjects: skip %s", startswith));
+      logger.warn(String.format("loadSubjects: skip %s", startswith));
     } finally {
       g.close();
     }
