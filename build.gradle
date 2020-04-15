@@ -8,8 +8,10 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '4.0.3'
     id "com.github.spotbugs" version "3.0.0"
 }
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 repositories {
     jcenter()
