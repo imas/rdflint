@@ -1,0 +1,8 @@
+@base <http://example.com/> .
+@prefix schema: <http://schema.org/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+<something>
+    a <http://example.com/rdflint#someclass> ;
+    schem:familyName "familyName" .

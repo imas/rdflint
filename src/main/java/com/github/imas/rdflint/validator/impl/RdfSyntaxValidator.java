@@ -62,7 +62,11 @@ public class RdfSyntaxValidator extends AbstractRdfValidator {
         .base(baseUri + subdir)
         .errorHandler(new RdfLintSyntaxErrorHandler(problems, filename, this))
         .build();
-    parser.parse(g);
+    try {
+      parser.parse(g);
+    } catch (Exception ex) {
+      // no action: because exceptions recorded to problem variable
+    }
     g.close();
   }
 
