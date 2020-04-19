@@ -70,8 +70,14 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "RdflintLanguageServer configuration",
+			"title": "Rdflint Language Server",
 			"properties": {
+				"rdflintLanguageServer.enable": {
+					"scope": "window",
+					"type": "boolean",
+					"default": false,
+					"description": "Enable rdflint language server. (Experimental)"
+				},
 				"rdflintLanguageServer.trace.server": {
 					"scope": "window",
 					"type": "string",

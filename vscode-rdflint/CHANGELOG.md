@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Language Server Protocol enable/disable configuration.
+
 ## 0.0.4
 
 - Work with rdflint over Language Server Protocol.
