@@ -12,6 +12,11 @@ Provides RDF language support via [rdflint](https://github.com/imas/rdflint).
 - Shift+Cmd+P and select `rdflint Interactive Mode: SPARQL playground`.
    - You can find the command, with type substring like 'rdflint', 'SPARQL', etc.
 
+### How to enable Rdflint Language Server
+
+- Open Settings, and check 'Extentions > Rdflint Language Server > Enable rdflint language server'
+- Shift+Cmd+P and type `Reload Window`
+
 ## Features
 
 - rdflint validations.

@@ -18,6 +18,9 @@ export function activate(context: vscode.ExtensionContext) {
 	let rdflintJar : string | undefined = process.env.RDFLINT_JAR;
 	let javaExe : string = process.platform === 'win32' ? "/bin/java.exe" : "/bin/java";
 
+	// get configuration
+	const lspEnable: any = vscode.workspace.getConfiguration().get('rdflintLanguageServer.enable');
+
 	// setup rdflint jar file
 	async function setupRdflintJar() {
 		return new Promise(((resolve,reject)=>{
@@ -58,41 +61,43 @@ export function activate(context: vscode.ExtensionContext) {
 		}));
 	}
 
-	setupRdflintJar()
-		.then((jar) => {
-			// rdflint language server
-			let serverOptions: Executable = {
-				command: javaHome + javaExe,
-				args: ['-jar', '' + jar, '-ls']
-			};
+	if (lspEnable) {
+		setupRdflintJar()
+			.then((jar) => {
+				// rdflint language server
+				let serverOptions: Executable = {
+					command: javaHome + javaExe,
+					args: ['-jar', '' + jar, '-ls']
+				};
 
-			// Options to control the language client
-			let clientOptions: LanguageClientOptions = {
-				// Register the server for turtle documents
-				documentSelector: [
-					{ scheme: 'file', language: 'turtle' },
-					{ scheme: 'file', language: 'rdfxml' }
-				],
-				synchronize: {
-					// Notify the server about file changes to '.clientrc files contained in the workspace
-					fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-				}
-			};
+				// Options to control the language client
+				let clientOptions: LanguageClientOptions = {
+					// Register the server for turtle documents
+					documentSelector: [
+						{ scheme: 'file', language: 'turtle' },
+						{ scheme: 'file', language: 'rdfxml' }
+					],
+					synchronize: {
+						// Notify the server about file changes to '.clientrc files contained in the workspace
+						fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+					}
+				};
 
-			// Create the language client and start the client.
-			client = new LanguageClient(
-				'rdflintLanguageServerExperimental',
-				'RdfLint Language Server',
-				serverOptions,
-				clientOptions
-			);
+				// Create the language client and start the client.
+				client = new LanguageClient(
+					'rdflintLanguageServerExperimental',
+					'RdfLint Language Server',
+					serverOptions,
+					clientOptions
+				);
 
-			// Start the client. This will also launch the server
-			client.start();
-		})
-		.catch((err) => {
-			vscode.window.showInformationMessage(err);
-		});
+				// Start the client. This will also launch the server
+				client.start();
+			})
+			.catch((err) => {
+				vscode.window.showInformationMessage(err);
+			});
+	}
 
 	// rdflint interactive mode startup command
 	let disposable = vscode.commands.registerCommand('rdflint.interactiveMode', () => {
@@ -100,6 +105,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('Please setup enviroment variable JAVA_HOME');
 			return;
 		}
+
 
 		setupRdflintJar()
 			.then((jar) => {
