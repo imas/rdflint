@@ -31,29 +31,31 @@ public class RdfLint {
   public static final String VERSION = "0.1.3";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
 
-  protected static final List<String> CONFIG_SEARCH_PATH = Collections.unmodifiableList(
-      new ArrayList<String>() {
-        {
-          add("rdflint-config.yml");
-          add(".rdflint-config.yml");
-          add(".rdflint/rdflint-config.yml");
-          add("config/rdflint/rdflint-config.yml");
-          add(".circleci/rdflint-config.yml");
-        }
-      }
-  );
+  private static List<String> makeConfigSearchPath() {
+    List<String> lst = new ArrayList<>();
+    lst.add("rdflint-config.yml");
+    lst.add(".rdflint-config.yml");
+    lst.add(".rdflint/rdflint-config.yml");
+    lst.add("config/rdflint/rdflint-config.yml");
+    lst.add(".circleci/rdflint-config.yml");
+    return lst;
+  }
 
-  protected static final List<String> SUPPRESS_SEARCH_PATH = Collections.unmodifiableList(
-      new ArrayList<String>() {
-        {
-          add("rdflint-suppress.yml");
-          add(".rdflint-suppress.yml");
-          add(".rdflint/rdflint-suppress.yml");
-          add("config/rdflint/rdflint-suppress.yml");
-          add(".circleci/rdflint-suppress.yml");
-        }
-      }
-  );
+  private static List<String> makeSuppressSearchPath() {
+    List<String> lst = new ArrayList<>();
+    lst.add("rdflint-suppress.yml");
+    lst.add(".rdflint-suppress.yml");
+    lst.add(".rdflint/rdflint-suppress.yml");
+    lst.add("config/rdflint/rdflint-suppress.yml");
+    lst.add(".circleci/rdflint-suppress.yml");
+    return lst;
+  }
+
+  protected static final List<String> CONFIG_SEARCH_PATH = Collections
+      .unmodifiableList(makeConfigSearchPath());
+
+  protected static final List<String> SUPPRESS_SEARCH_PATH = Collections
+      .unmodifiableList(makeSuppressSearchPath());
 
   /**
    * rdflint entry point.
@@ -144,7 +146,7 @@ public class RdfLint {
         Path problemsPath = Paths.get(params.getOutputDir() + "/rdflint-problems.yml");
         LintProblemFormatter.out(System.out, problems);
         LintProblemFormatter.yaml(Files.newOutputStream(problemsPath), problems);
-        final String minErrorLevel = cmd.getOptionValue("minErrorLevel","WARN");
+        final String minErrorLevel = cmd.getOptionValue("minErrorLevel", "WARN");
         final LintProblem.ErrorLevel errorLevel = LintProblem.ErrorLevel.valueOf(minErrorLevel);
         if (problems.hasProblemOfLevelOrWorse(errorLevel)) {
           System.exit(1);
