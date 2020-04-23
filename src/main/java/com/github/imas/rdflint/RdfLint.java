@@ -1,16 +1,13 @@
 package com.github.imas.rdflint;
 
 import com.github.imas.rdflint.config.RdfLintParameters;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -23,39 +20,12 @@ import org.apache.log4j.Logger;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.yaml.snakeyaml.Yaml;
 
 
 public class RdfLint {
 
   public static final String VERSION = "0.1.3";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
-
-  private static List<String> makeConfigSearchPath() {
-    List<String> lst = new ArrayList<>();
-    lst.add("rdflint-config.yml");
-    lst.add(".rdflint-config.yml");
-    lst.add(".rdflint/rdflint-config.yml");
-    lst.add("config/rdflint/rdflint-config.yml");
-    lst.add(".circleci/rdflint-config.yml");
-    return lst;
-  }
-
-  private static List<String> makeSuppressSearchPath() {
-    List<String> lst = new ArrayList<>();
-    lst.add("rdflint-suppress.yml");
-    lst.add(".rdflint-suppress.yml");
-    lst.add(".rdflint/rdflint-suppress.yml");
-    lst.add("config/rdflint/rdflint-suppress.yml");
-    lst.add(".circleci/rdflint-suppress.yml");
-    return lst;
-  }
-
-  protected static final List<String> CONFIG_SEARCH_PATH = Collections
-      .unmodifiableList(makeConfigSearchPath());
-
-  protected static final List<String> SUPPRESS_SEARCH_PATH = Collections
-      .unmodifiableList(makeSuppressSearchPath());
 
   /**
    * rdflint entry point.
@@ -118,29 +88,23 @@ public class RdfLint {
     }
 
     // Set parameter
-    String targetDir = cmd.getOptionValue("targetdir");
-    String parentPath = targetDir != null ? targetDir : ".";
-    String configPath = cmd.getOptionValue("config");
-    if (configPath == null) {
-      for (String fn : CONFIG_SEARCH_PATH) {
-        Path path = Paths.get(parentPath + "/" + fn);
-        if (Files.exists(path)) {
-          configPath = path.toAbsolutePath().toString();
-          break;
-        }
+    Map<String, String> cmdOptions = new ConcurrentHashMap<>();
+    for (String key :
+        Arrays.asList("targetdir", "config", "suppress", "outputdir", "baseuri", "origindir")) {
+      if (cmd.hasOption(key)) {
+        cmdOptions.put(key, cmd.getOptionValue(key));
       }
     }
-    RdfLint lint = new RdfLint();
-    RdfLintParameters params = lint.loadConfig(configPath);
-    setupParameters(params, cmd, targetDir, parentPath);
 
     // Main procedure
     if (cmd.hasOption("i")) {
       // Execute Interactive mode
       InteractiveMode imode = new InteractiveMode();
-      imode.execute(params, params.getTargetDir());
+      imode.execute(cmdOptions);
     } else {
       // Execute linter
+      RdfLint lint = new RdfLint();
+      RdfLintParameters params = ConfigurationLoader.loadParameters(cmdOptions);
       LintProblemSet problems = lint.lintRdfDataSet(params, params.getTargetDir());
       if (problems.hasProblem()) {
         Path problemsPath = Paths.get(params.getOutputDir() + "/rdflint-problems.yml");
@@ -153,64 +117,6 @@ public class RdfLint {
         }
       }
     }
-  }
-
-  static void setupParameters(
-      RdfLintParameters params, CommandLine cmd, String targetDir, String parentPath) {
-    String suppressPath = cmd.getOptionValue("suppress");
-    if (suppressPath == null) {
-      for (String fn : SUPPRESS_SEARCH_PATH) {
-        Path path = Paths.get(parentPath + "/" + fn);
-        if (Files.exists(path)) {
-          suppressPath = path.toAbsolutePath().toString();
-          break;
-        }
-      }
-    }
-
-    if (targetDir != null) {
-      params.setTargetDir(targetDir);
-    } else if (params.getTargetDir() == null) {
-      params.setTargetDir(".");
-    }
-
-    String outputDir = cmd.getOptionValue("outputdir");
-    if (outputDir != null) {
-      params.setOutputDir(outputDir);
-    } else if (params.getOutputDir() == null) {
-      params.setOutputDir(params.getTargetDir());
-    }
-
-    String baseUri = cmd.getOptionValue("baseuri");
-    if (baseUri != null) {
-      params.setBaseUri(baseUri);
-    }
-
-    String originPath = cmd.getOptionValue("origindir");
-    if (originPath != null) {
-      params.setOriginDir(originPath);
-    }
-
-    if (suppressPath != null) {
-      params.setSuppressPath(suppressPath);
-    }
-  }
-
-  /**
-   * load configuration file.
-   */
-  public RdfLintParameters loadConfig(String configPath) throws IOException {
-    logger.trace(String.format("loadConfig: configPath=%s", configPath));
-    if (configPath == null) {
-      return new RdfLintParameters();
-    }
-    Yaml yaml = new Yaml();
-    RdfLintParameters params = yaml.loadAs(
-        new InputStreamReader(
-            Files.newInputStream(Paths.get(new File(configPath).getCanonicalPath())),
-            StandardCharsets.UTF_8),
-        RdfLintParameters.class);
-    return params != null ? params : new RdfLintParameters();
   }
 
   /**

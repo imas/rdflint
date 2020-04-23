@@ -22,6 +22,7 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.log4j.Logger;
@@ -46,9 +47,9 @@ public class InteractiveMode {
   /**
    * execute interacitve mode.
    */
-  void execute(RdfLintParameters params, String targetDir) throws IOException {
-    // load rdf
-    Model m = DatasetLoader.loadRdfSet(params, targetDir);
+  void execute(Map<String, String> cmdOptions) throws IOException {
+    // initialize graph model
+    Model m = ModelFactory.createDefaultModel();
 
     // initialize jline
     Terminal terminal = TerminalBuilder.builder()
@@ -64,6 +65,17 @@ public class InteractiveMode {
         .format(messages.getString("interactivemode.welcome"), RdfLint.VERSION);
     System.out.println(welcome);// NOPMD
 
+    RdfLintParameters params = new RdfLintParameters();
+    try {
+      // load configurations
+      params = ConfigurationLoader.loadParameters(cmdOptions);
+      // load rdf
+      m.removeAll();
+      m.add(DatasetLoader.loadRdfSet(params, params.getTargetDir()));
+    } catch (Exception ex) {
+      System.out.println(ex.getLocalizedMessage()); // NOPMD
+    }
+
     while (true) {
       String line;
 
@@ -73,7 +85,7 @@ public class InteractiveMode {
         return;
       }
 
-      if (!interactiveCommand(System.out, line, params, targetDir, m)) {
+      if (!interactiveCommand(System.out, line, params, cmdOptions, m)) {
         return;
       }
     }
@@ -81,9 +93,10 @@ public class InteractiveMode {
 
   @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING")
   static boolean interactiveCommand(OutputStream out, String line,
-      RdfLintParameters params, String targetDir, Model m)
+      RdfLintParameters params, Map<String, String> cmdOptions, Model m)
       throws IOException {
     PrintWriter pw = new PrintWriter(out);
+    String targetDir = params.getTargetDir();
 
     if (StringUtils.isEmpty(line)) {
       return true;
@@ -112,8 +125,15 @@ public class InteractiveMode {
           break;
 
         case "reload":
-          m.removeAll();
-          m.add(DatasetLoader.loadRdfSet(params, targetDir));
+          try {
+            RdfLintParameters paramsTmp = ConfigurationLoader.loadParameters(cmdOptions);
+            RdfLintParameters.copyProperties(paramsTmp, params);
+
+            m.removeAll();
+            m.add(DatasetLoader.loadRdfSet(params, targetDir));
+          } catch (Exception ex) {
+            pw.println(ex.getLocalizedMessage());
+          }
           break;
 
         case "help":
