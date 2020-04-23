@@ -1,12 +1,10 @@
-import com.github.spotbugs.SpotBugsTask
-
 plugins {
     id 'java'
     id 'checkstyle'
     id 'pmd'
     id 'jacoco'
     id 'com.github.johnrengelman.shadow' version '4.0.3'
-    id "com.github.spotbugs" version "3.0.0"
+    id 'com.github.spotbugs' version '4.0.5'
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -32,7 +30,8 @@ dependencies {
     compile group: 'org.topbraid', name: 'shacl', version: '1.3.0'
 
     compileOnly 'net.jcip:jcip-annotations:1.0'
-    compileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.12'
+    compileOnly 'com.github.spotbugs:spotbugs:4.0.2'
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.0.2'
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
@@ -48,10 +47,10 @@ artifacts {
 }
 
 checkstyle {
-    toolVersion '8.16'
+    toolVersion '8.23'
 }
 pmd {
-    toolVersion '6.10.0'
+    toolVersion '6.22.0'
     sourceSets = [sourceSets.main]
     ruleSets = [
             "category/java/bestpractices.xml",
@@ -59,6 +58,9 @@ pmd {
             "category/java/performance.xml",
             "category/java/security.xml"
     ]
+}
+spotbugs {
+    toolVersion = '4.0.2'
 }
 jacocoTestCoverageVerification {
     violationRules {
@@ -75,7 +77,7 @@ tasks.withType(Checkstyle) {
         html.enabled = true
     }
 }
-tasks.withType(SpotBugsTask) {
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
     reports {
         xml.enabled = false
         html.enabled = true
