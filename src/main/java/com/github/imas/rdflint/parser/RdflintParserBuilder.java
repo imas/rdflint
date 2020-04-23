@@ -27,7 +27,7 @@ public class RdflintParserBuilder {
    * Build RdflintParser from path.
    */
   public RdflintParserBuilder source(Path path) throws IOException {
-    this.lang = path.endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
+    this.lang = path.toString().endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
     this.body = Files.lines(path, StandardCharsets.UTF_8)
         .collect(Collectors.joining(System.getProperty("line.separator")));
     return this;
