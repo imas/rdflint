@@ -24,7 +24,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 public class RdfLint {
 
-  public static final String VERSION = "0.1.3";
+  public static final String VERSION = "0.1.4";
   private static final Logger logger = Logger.getLogger(RdfLint.class.getName());
 
   /**
