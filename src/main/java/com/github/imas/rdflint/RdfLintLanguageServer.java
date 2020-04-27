@@ -69,7 +69,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
         // pass
       }
       return decoded;
-    }).collect(Collectors.joining(fileSeparator));
+    }).collect(Collectors.joining(File.separator));
     if (fullPath.split(fileSeparator)[1].endsWith(":")) {
       fullPath = fullPath.substring(1);
     }
@@ -225,6 +225,9 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
                 String subdir = filename.substring(0, filename.lastIndexOf(File.separator) + 1);
                 if (File.separatorChar == '\\') {
                   subdir = filename.replaceAll("\\\\", "/");
+                }
+                if (subdir.length() > 0 && subdir.charAt(0) == '/' && baseUri.endsWith("/")) {
+                  subdir = subdir.substring(1);
                 }
                 Lang lang = e.toString().endsWith(".ttl") ? Lang.TURTLE : Lang.RDFXML;
                 String text = sourceTextMap.get(convertFilePath2Uri(e.toString()));
