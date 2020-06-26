@@ -19,7 +19,7 @@ public class ConfigurationLoader {
 
   private static final Logger logger = Logger.getLogger(ConfigurationLoader.class.getName());
 
-  protected static final List<String> CONFIG_SEARCH_PATH = Collections
+  private static final List<String> CONFIG_SEARCH_PATH = Collections
       .unmodifiableList(Arrays.asList(
           "rdflint-config.yml",
           ".rdflint-config.yml",
@@ -27,7 +27,7 @@ public class ConfigurationLoader {
           "config/rdflint/rdflint-config.yml",
           ".circleci/rdflint-config.yml"
       ));
-  protected static final List<String> SUPPRESS_SEARCH_PATH = Collections
+  private static final List<String> SUPPRESS_SEARCH_PATH = Collections
       .unmodifiableList(Arrays.asList(
           "rdflint-suppress.yml",
           ".rdflint-suppress.yml",
@@ -44,13 +44,7 @@ public class ConfigurationLoader {
     String configPath = cmdOptions.get("config");
     String parentPath = targetDir != null ? targetDir : ".";
     if (configPath == null) {
-      for (String fn : CONFIG_SEARCH_PATH) {
-        Path path = Paths.get(parentPath + "/" + fn);
-        if (Files.exists(path)) {
-          configPath = path.toAbsolutePath().toString();
-          break;
-        }
-      }
+      configPath = searchConfigPath(parentPath);
     }
     RdfLintParameters params = loadConfig(configPath);
     setupParameters(params, targetDir, parentPath, cmdOptions);
@@ -63,13 +57,7 @@ public class ConfigurationLoader {
       Map<String, String> cmdOptions) {
     String suppressPath = cmdOptions.get("suppress");
     if (suppressPath == null) {
-      for (String fn : SUPPRESS_SEARCH_PATH) {
-        Path path = Paths.get(parentPath + "/" + fn);
-        if (Files.exists(path)) {
-          suppressPath = path.toAbsolutePath().toString();
-          break;
-        }
-      }
+      suppressPath = searchSuppressPath(parentPath);
     }
 
     if (targetDir != null) {
@@ -96,6 +84,26 @@ public class ConfigurationLoader {
     if (suppressPath != null) {
       params.setSuppressPath(suppressPath);
     }
+  }
+
+  protected static String searchConfigPath(String parentPath) {
+    for (String fn : CONFIG_SEARCH_PATH) {
+      Path path = Paths.get(parentPath + "/" + fn);
+      if (Files.exists(path)) {
+        return path.toAbsolutePath().toString();
+      }
+    }
+    return null;
+  }
+
+  protected static String searchSuppressPath(String parentPath) {
+    for (String fn : SUPPRESS_SEARCH_PATH) {
+      Path path = Paths.get(parentPath + "/" + fn);
+      if (Files.exists(path)) {
+        return path.toAbsolutePath().toString();
+      }
+    }
+    return null;
   }
 
   /**
