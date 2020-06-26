@@ -119,7 +119,7 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
   public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
     // initialize rdflint
     String rootPath = convertUri2FilePath(params.getRootUri());
-    String configPath = "";
+    String configPath = null;
     for (String fn : ConfigurationLoader.CONFIG_SEARCH_PATH) {
       Path path = Paths.get(rootPath + "/" + fn);
       if (Files.exists(path)) {
