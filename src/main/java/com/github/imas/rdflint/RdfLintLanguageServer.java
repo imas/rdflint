@@ -15,7 +15,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -119,26 +118,13 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
   public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
     // initialize rdflint
     String rootPath = convertUri2FilePath(params.getRootUri());
-    String configPath = "";
-    for (String fn : ConfigurationLoader.CONFIG_SEARCH_PATH) {
-      Path path = Paths.get(rootPath + "/" + fn);
-      if (Files.exists(path)) {
-        configPath = path.toAbsolutePath().toString();
-        break;
-      }
-    }
+    String configPath = ConfigurationLoader.searchConfigPath(rootPath);
     try {
       rdflintParams = ConfigurationLoader.loadConfig(configPath);
       rdflintParams.setTargetDir(rootPath);
       rdflintParams.setOutputDir(rootPath);
       if (rdflintParams.getSuppressPath() == null) {
-        for (String fn : ConfigurationLoader.SUPPRESS_SEARCH_PATH) {
-          Path path = Paths.get(rootPath + "/" + fn);
-          if (Files.exists(path)) {
-            rdflintParams.setSuppressPath(path.toAbsolutePath().toString());
-            break;
-          }
-        }
+        rdflintParams.setSuppressPath(ConfigurationLoader.searchSuppressPath(rootPath));
       }
     } catch (IOException ex) {
       showException("Error cannot initialize rdflint", ex);
