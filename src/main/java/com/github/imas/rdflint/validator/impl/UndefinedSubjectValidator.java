@@ -40,7 +40,7 @@ public class UndefinedSubjectValidator extends AbstractRdfValidator {
         "http://www.w3.org/1999/02/22-rdf-syntax-ns# rdf/org/w3/rdf-syntax-ns.ttl",
         "http://www.w3.org/2000/01/rdf-schema# rdf/org/w3/rdf-schema.ttl",
         "http://www.w3.org/ns/shacl# rdf/org/w3/shacl.ttl",
-        "http://schema.org/ rdf/org/schema/3.4/all-layers.ttl",
+        "http://schema.org/ rdf/org/schema/11.01/schemaorg-all-http.ttl",
         "http://xmlns.com/foaf/0.1/ rdf/com/xmlns/foaf/20140114.rdf",
         "http://purl.org/dc/elements/1.1/ rdf/org/purl/dcelements.ttl",
     };
