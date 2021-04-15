@@ -3,6 +3,8 @@ rdflint
 
 [![JitPack](https://jitpack.io/v/imas/rdflint.svg)](https://jitpack.io/#imas/rdflint)
 [![Marketplace Version](https://vsmarketplacebadge.apphb.com/version/takemikami.vscode-rdflint.svg "Current Release")](https://marketplace.visualstudio.com/items?itemName=takemikami.vscode-rdflint)
+[![Setup rdflint](https://img.shields.io/badge/GitHub_Marketplace-Setup_rdflint-light_green)](https://github.com/marketplace/actions/setup-rdflint)
+[![ci](https://github.com/imas/rdflint/actions/workflows/ci.yaml/badge.svg)](https://github.com/imas/rdflint/actions/workflows/ci.yaml)
 [![UsersGuide](https://img.shields.io/badge/users_guide-ja-blue)](https://imas.github.io/rdflint/)
 
 
@@ -11,7 +13,7 @@ rdflint
 
 ## What's rdflint
 
-rdflint is a linter for RDF files. Easy to check syntax and other things. rdflint is powered by Apache Jena.
+rdflint is a linter for RDF files. Easy to check syntax and other things. rdflint is powered by [Apache Jena](https://jena.apache.org/).
 
 rdflint has following functions.
 
@@ -69,27 +71,6 @@ jobs:
 ```
 
 See [imas/setup-rdflint](https://github.com/imas/setup-rdflint) for more information.
-
-### Work on CircleCI
-
-Make ``.circleci/config.yml`` to your repository. Its contents is following.
-
-```
-version: 2
-jobs:
-  build:
-    docker:
-    - image: circleci/openjdk:8
-    working_directory: ~/repo
-    steps:
-    - checkout
-    - run:
-        name: run rdflint
-        command: |
-          RDFLINT_VERSION=0.1.5
-          wget https://jitpack.io/com/github/imas/rdflint/$RDFLINT_VERSION/rdflint-$RDFLINT_VERSION.jar
-          java -jar rdflint-$RDFLINT_VERSION.jar
-```
 
 ## Configurations
 
@@ -252,6 +233,10 @@ Run rdflint.
 $ java -jar build/libs/rdflint.jar -targetdir example/dataset
 ```
 
+### IDE Settings
+
+Use [dotidea](https://github.com/imas/rdflint/tree/dotidea) - Project Settings for IntelliJ IDEA.
+
 ## License
 
-rdflint is released under the MIT License.
+rdflint is released under the [MIT License](https://github.com/imas/rdflint/blob/master/LICENSE).
