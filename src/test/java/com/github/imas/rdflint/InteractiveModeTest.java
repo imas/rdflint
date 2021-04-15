@@ -27,7 +27,12 @@ import org.junit.Test;
 public class InteractiveModeTest {
 
   public String getParentPath(String testSet) {
-    return this.getClass().getClassLoader().getResource("testRDFs/" + testSet).getPath();
+    String parentPath = this.getClass().getClassLoader().getResource("testRDFs/" + testSet)
+        .getPath();
+    if (parentPath.charAt(2) == ':') {
+      return parentPath.substring(1);
+    }
+    return parentPath;
   }
 
   @Test

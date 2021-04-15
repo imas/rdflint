@@ -70,6 +70,9 @@ public class RdflintParserTurtleTest {
   private String getTestRdfsPath() {
     URL rootUrl = this.getClass().getClassLoader().getResource("testRDFs/");
     assertNotNull("testRDFs not found", rootUrl);
+    if (rootUrl.getPath().charAt(2) == ':') {
+      return rootUrl.getPath().substring(1);
+    }
     return rootUrl.getPath();
   }
 

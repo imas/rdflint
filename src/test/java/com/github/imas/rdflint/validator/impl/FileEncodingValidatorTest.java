@@ -18,8 +18,12 @@ import org.junit.Test;
 public class FileEncodingValidatorTest {
 
   private String getParentPath() {
-    return this.getClass().getClassLoader()
+    String parentPath = this.getClass().getClassLoader()
         .getResource("testValidatorsImpl/FileEncodingValidator/fileencoding").getPath();
+    if (parentPath.charAt(2) == ':') {
+      return parentPath.substring(1);
+    }
+    return parentPath;
   }
 
   private LintProblemSet callFileEncodingValidate(String rdfname, RdfLintParameters param) {
