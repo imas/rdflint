@@ -58,7 +58,10 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
    */
   public static String convertUri2FilePath(String uri) {
     String fileSeparator = File.separatorChar == '\\' ? "\\\\" : File.separator;
-    String prefix = File.separatorChar == '\\' ? "file:///" : "file://";
+    String prefix = "file://";
+    if (uri.length() > prefix.length() && uri.charAt(prefix.length() + 2) == ':') {
+      prefix = "file:///";
+    }
     String fullPathEncoded = uri.substring(prefix.length());
     String fullPath = Arrays.stream(fullPathEncoded.split("/")).map(raw -> {
       String decoded = raw;
@@ -69,7 +72,8 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
       }
       return decoded;
     }).collect(Collectors.joining(File.separator));
-    if (fullPath.split(fileSeparator)[1].endsWith(":")) {
+    if (fullPath.split(fileSeparator).length > 1
+        && fullPath.split(fileSeparator)[1].endsWith(":")) {
       fullPath = fullPath.substring(1);
     }
     return fullPath;
@@ -80,7 +84,10 @@ public class RdfLintLanguageServer implements LanguageServer, LanguageClientAwar
    */
   public static String convertFilePath2Uri(String filePath) {
     String fileSeparator = File.separatorChar == '\\' ? "\\\\" : File.separator;
-    String prefix = filePath.charAt(0) == '/' ? "file://" : "file:///";
+    String prefix = "file://";
+    if (filePath.length() > 1 && filePath.charAt(1) == ':') {
+      prefix = "file:///";
+    }
     return prefix + Arrays.stream(filePath.split(fileSeparator))
         .map(raw -> {
           String decoded = raw;

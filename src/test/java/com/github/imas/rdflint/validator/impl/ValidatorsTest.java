@@ -31,7 +31,8 @@ public class ValidatorsTest {
   public void commonValidatorsTest() throws Exception {
     URL rootUrl = this.getClass().getClassLoader().getResource("testValidatorsImpl/");
     assertNotNull("testValidatorsImpl not found", rootUrl);
-    String rootPath = rootUrl.getPath();
+    String rootPath =
+        rootUrl.getPath().charAt(2) == ':' ? rootUrl.getPath().substring(1) : rootUrl.getPath();
 
     Files.walk(Paths.get(rootPath), 2)
         .filter(f -> f.toString().length() > rootPath.length())

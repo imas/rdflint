@@ -26,7 +26,7 @@ public class RdfLintLanguageServerTest {
   @Test
   public void convertUri2FilePath() throws Exception {
     String path1 = String.join(File.separator, new String[]{"home", "user", "rdflint"});
-    assertEquals("/" + path1,
+    assertEquals(File.separator + path1,
         RdfLintLanguageServer.convertUri2FilePath("file:///home/user/rdflint"));
 
     String path2 = String.join(File.separator, new String[]{"C:", "rdflint"});
@@ -38,7 +38,7 @@ public class RdfLintLanguageServerTest {
   public void convertFilePath2Uri() throws Exception {
     String path1 = String.join(File.separator, new String[]{"home", "user", "rdflint"});
     assertEquals("file:///home/user/rdflint",
-        RdfLintLanguageServer.convertFilePath2Uri("/" + path1));
+        RdfLintLanguageServer.convertFilePath2Uri(File.separator + path1));
 
     String path2 = String.join(File.separator, new String[]{"C:", "rdflint"});
     assertEquals("file:///C%3A/rdflint",
@@ -51,7 +51,7 @@ public class RdfLintLanguageServerTest {
     InitializeParams initParams = new InitializeParams();
     String rootPath = this.getClass().getClassLoader().getResource("testValidatorsImpl/").getPath();
     String parentPath = rootPath + "TrimValidator/turtle_needtrim";
-    initParams.setRootUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath));
+    initParams.setRootUri("file://" + parentPath);
     lsp.initialize(initParams);
 
     LanguageClient client = mock(LanguageClient.class);
@@ -68,7 +68,7 @@ public class RdfLintLanguageServerTest {
     InitializeParams initParams = new InitializeParams();
     String rootPath = this.getClass().getClassLoader().getResource("testValidatorsImpl/").getPath();
     String parentPath = rootPath + "TrimValidator/turtle_needtrim";
-    initParams.setRootUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath));
+    initParams.setRootUri("file://" + parentPath);
     lsp.initialize(initParams);
 
     LanguageClient client = mock(LanguageClient.class);
@@ -99,7 +99,8 @@ public class RdfLintLanguageServerTest {
     InitializeParams initParams = new InitializeParams();
     String rootPath = this.getClass().getClassLoader().getResource("testValidatorsImpl/").getPath();
     String parentPath = rootPath + "TrimValidator/turtle_needtrim";
-    initParams.setRootUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath));
+    System.out.println(parentPath);
+    initParams.setRootUri("file://" + parentPath);
     lsp.initialize(initParams);
 
     LanguageClient client = mock(LanguageClient.class);
@@ -133,7 +134,7 @@ public class RdfLintLanguageServerTest {
     InitializeParams initParams = new InitializeParams();
     String rootPath = this.getClass().getClassLoader().getResource("testValidatorsImpl/").getPath();
     String parentPath = rootPath + "TrimValidator/turtle_needtrim";
-    initParams.setRootUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath));
+    initParams.setRootUri("file://" + parentPath);
     lsp.initialize(initParams);
 
     LanguageClient client = mock(LanguageClient.class);
@@ -167,7 +168,7 @@ public class RdfLintLanguageServerTest {
     InitializeParams initParams = new InitializeParams();
     String rootPath = this.getClass().getClassLoader().getResource("testValidatorsImpl/").getPath();
     String parentPath = rootPath + "TrimValidator/turtle_needtrim";
-    initParams.setRootUri(RdfLintLanguageServer.convertFilePath2Uri(parentPath));
+    initParams.setRootUri("file://" + parentPath);
     lsp.initialize(initParams);
 
     LanguageClient client = mock(LanguageClient.class);

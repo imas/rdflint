@@ -88,7 +88,7 @@ public class ConfigurationLoader {
 
   protected static String searchConfigPath(String parentPath) {
     for (String fn : CONFIG_SEARCH_PATH) {
-      Path path = Paths.get(parentPath + "/" + fn);
+      Path path = Paths.get(parentPath + File.separatorChar + fn);
       if (Files.exists(path)) {
         return path.toAbsolutePath().toString();
       }
@@ -98,7 +98,7 @@ public class ConfigurationLoader {
 
   protected static String searchSuppressPath(String parentPath) {
     for (String fn : SUPPRESS_SEARCH_PATH) {
-      Path path = Paths.get(parentPath + "/" + fn);
+      Path path = Paths.get(parentPath + File.separatorChar + fn);
       if (Files.exists(path)) {
         return path.toAbsolutePath().toString();
       }
