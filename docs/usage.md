@@ -110,12 +110,12 @@ rdflintでSAPRQLクエリのテスト実行を行う手順を説明します。
 
 ## CIからの実行
 
-CircleCIでの設定方法を例に、CIでrdflintを実行する手順を説明します。
+GitHub Actionsでの設定方法を例に、CIでrdflintを実行する手順を説明します。
 
 1. rdflintの設定ファイルを作成します。   
    ここでは、以下のファイルを作成します。
 
-   ファイル名: .circleci/rdflint-config.yml
+   ファイル名: .rdflint/rdflint-config.yml
 
    ```
    baseUri: https://example.com/targetrdf/
@@ -123,34 +123,32 @@ CircleCIでの設定方法を例に、CIでrdflintを実行する手順を説明
 
    baseUriには、対象リソースURIのベース階層を指定します。
 
-2. CircleCIの設定ファイル``.circleci/config.yml``を作成します。  
+2. CircleCIの設定ファイル``.github/workflows/ci.yml``を作成します。  
    ここでは、次のような設定ファイルを作成します。
 
    ```
-   version: 2
+   name: CI
+   on: pull_request
    jobs:
-     build:
-       docker:
-       - image: circleci/openjdk:8
-       working_directory: ~/repo
+     rdflint:
+       runs-on: ubuntu-latest
        steps:
-       - checkout
-       - run:
-           name: run rdflint
-           command: |
-             RDFLINT_VERSION={{site.RDFLINT_VERSION}}
-             wget https://jitpack.io/com/github/imas/rdflint/$RDFLINT_VERSION/rdflint-$RDFLINT_VERSION.jar
-             java -jar rdflint-$RDFLINT_VERSION.jar -config .circleci/config.yml
+       - uses: actions/checkout@v2
+       - uses: actions/setup-java@v1
+         with:
+           java-version: 11
+       - uses: imas/setup-rdflint@v1
+       - name: Run rdflint
+         run: rdflint
    ```
 
 3. 上記の２ファイルの追加をgit管理下に追加し、GitHubにpushします。  
-   CircleCIを有効化すると、commitやpull request作成の度にrdflintが実行されます。
-
+   CircleCIを有効化すると、pull request作成及び修正時にrdflintが実行されます。
 
 ## 不要な警告を無視する
 
 rdflintが出力する警告について、場合によっては修正が不要で無視したいケースがあります。  
-このような場合に、警告を出力しないように設定する方法を説明します。
+このような場合に、警告を出力しないように設定する方法を説明します。  
 （rdflintには、統計的な値の偏りから正しくない値の疑いがあると判断するロジックも含まれています）
 
 事前に前項「rdflintの実行手順」を完了させておいて下さい。
