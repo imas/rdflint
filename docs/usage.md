@@ -123,7 +123,7 @@ GitHub Actionsでの設定方法を例に、CIでrdflintを実行する手順を
 
    baseUriには、対象リソースURIのベース階層を指定します。
 
-2. CircleCIの設定ファイル``.github/workflows/ci.yml``を作成します。  
+2. GitHub Actionsの設定ファイル``.github/workflows/ci.yml``を作成します。  
    ここでは、次のような設定ファイルを作成します。
 
    ```
@@ -134,8 +134,9 @@ GitHub Actionsでの設定方法を例に、CIでrdflintを実行する手順を
        runs-on: ubuntu-latest
        steps:
        - uses: actions/checkout@v2
-       - uses: actions/setup-java@v1
+       - uses: actions/setup-java@v2
          with:
+           distribution: adopt
            java-version: 11
        - uses: imas/setup-rdflint@v1
        - name: Run rdflint
@@ -143,7 +144,7 @@ GitHub Actionsでの設定方法を例に、CIでrdflintを実行する手順を
    ```
 
 3. 上記の２ファイルの追加をgit管理下に追加し、GitHubにpushします。  
-   CircleCIを有効化すると、pull request作成及び修正時にrdflintが実行されます。
+   GitHub Actionsを有効化すると、pull request作成及び修正時にrdflintが実行されます。
 
 ## 不要な警告を無視する
 
