@@ -1,11 +1,11 @@
-# RDFデータのチェックツール「rdflint」の利用ガイド における個人情報の取り扱い
+# Privacy Policy of rdflint users guide
 
-[ホーム](index.md) |
-[セットアップ](setup.md) |
-[使い方](usage.md) |
-[設定ファイル](config.md) |
-[検証ルール](rules.md) |
-[開発者向け](developer.md)
+[Home](index.md) |
+[Setup](setup.md) |
+[Usage](usage.md) |
+[Configuration](config.md) |
+[Rules](rules.md) |
+[Development](developer.md)
 
 ## 基本方針
 
