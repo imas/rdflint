@@ -1,11 +1,11 @@
-# 開発者向け
+# Development
 
-[ホーム](index.md) |
-[セットアップ](setup.md) |
-[使い方](usage.md) |
-[設定ファイル](config.md) |
-[検証ルール](rules.md) |
-[開発者向け](developer.md)
+[Home](index.md) |
+[Setup](setup.md) |
+[Usage](usage.md) |
+[Configuration](config.md) |
+[Rules](rules.md) |
+[Development](developer.md)
 
 rdflintの開発に参加、カスタマイズ開発をおこなう方向けの情報です。
 

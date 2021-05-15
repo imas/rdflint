@@ -7,9 +7,8 @@ rdflint
 [![ci](https://github.com/imas/rdflint/actions/workflows/ci.yaml/badge.svg)](https://github.com/imas/rdflint/actions/workflows/ci.yaml)
 [![UsersGuide](https://img.shields.io/badge/users_guide-ja-blue)](https://imas.github.io/rdflint/)
 
-
-日本語版のユーザガイドも利用頂けます。(Japanese User Guide Available.)  
-[RDFデータのチェックツール「rdflint」の利用ガイド](https://imas.github.io/rdflint/)
+[rdflint Users Guide](https://imas.github.io/rdflint/)  
+Note. Currencty translate to English from Japanese. Some part is still in Japanese.
 
 ## What's rdflint
 

@@ -1,40 +1,40 @@
-# 設定ファイル
+# Configuration
 
-[ホーム](index.md) |
-[セットアップ](setup.md) |
-[使い方](usage.md) |
-[設定ファイル](config.md) |
-[検証ルール](rules.md) |
-[開発者向け](developer.md)
+[Home](index.md) |
+[Setup](setup.md) |
+[Usage](usage.md) |
+[Configuration](config.md) |
+[Rules](rules.md) |
+[Development](developer.md)
 
-rdflintの設定ファイルの記載方法を説明します。
+About rdflint configuration file.
 
-## 設定ファイルの全体階層
+## Structure of rdflint configuration file
 
 - targetDir
 - originDir
 - baseUri
 - suppressPath
 - rules
-   - リスト
+   - (List)
       - name
       - query
       - target
       - valid
 - generation
-   - リスト
+   - (List)
       - query
       - input
       - template
       - output
 - validation
    - undefinedSubject
-      - リスト
+      - (List)
          - url
          - startswith
          - langtype
    - fileEncoding
-      - リスト
+      - (List)
          - target
          - charset
          - end_of_line
@@ -44,7 +44,7 @@ rdflintの設定ファイルの記載方法を説明します。
          - trim_trailing_whitespace
 
 
-設定ファイルの例
+Example
 
 ```
 baseUri: https://sparql.crssnky.xyz/imasrdf/

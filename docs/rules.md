@@ -1,23 +1,23 @@
-# 検証ルール
+# Rules
 
-[ホーム](index.md) |
-[セットアップ](setup.md) |
-[使い方](usage.md) |
-[設定ファイル](config.md) |
-[検証ルール](rules.md) |
-[開発者向け](developer.md)
+[Home](index.md) |
+[Setup](setup.md) |
+[Usage](usage.md) |
+[Configuration](config.md) |
+[Rules](rules.md) |
+[Development](developer.md)
 
-rdflintが提供する各検証ルールを紹介します。
+About validation rules of rdflint.
 
-検証される具体的なケースは、以下のテストデータが参考になるかも知れません。
+Test data can be cited for your study.
 [https://github.com/imas/rdflint/tree/master/src/test/resources/testValidatorsImpl](https://github.com/imas/rdflint/tree/master/src/test/resources/testValidatorsImpl)
 
 
-## 文法検証
+## Syntax validation
 
 rdfやturtleファイルの文法が正しいかを検証します。
 
-## 未定義主語の使用検証
+## Undefined subject check
 
 未定義の主語が、述語・目的語として使用されていないかを検証します。
 
@@ -34,7 +34,7 @@ rdfやturtleファイルの文法が正しいかを検証します。
 
 ｰ 設定ファイルで指定したデータセットの主語
 
-## カスタムクエリ検証
+## Custom check
 
 SPARQLを利用したカスタムクエリによるデータ整合を検証します。
 
@@ -48,13 +48,13 @@ SPARQLを利用したカスタムクエリによるデータ整合を検証し�
    ``valid``で指定されたgroovyスクリプトを実行する  
    groovyスクリプトの``log``のwarnメソッドで、検証NG時のエラーを出力できる
 
-## デグレード検証
+## Degrade validation
 
 削除された、SubjectやTripleが無いかを確認して情報を出力します。
 
 比較対象(変更前)の対象ディレクトリを、設定ファイル``originDir``で指定します。
 
-## データ型検証
+## Datatype validation
 
 述語に対するリテラルのデータ型の妥当性を検証します。
 
@@ -67,7 +67,7 @@ SPARQLを利用したカスタムクエリによるデータ整合を検証し�
 
 同じ述語に対して、20件以上リテラルが存在しない場合は検証対象になりません。
 
-## 外れ値検証
+## Outlier validation
 
 数値型データに対して、他のデータと値が離れているデータが無いかを検証します。
 
@@ -79,18 +79,18 @@ SPARQLを利用したカスタムクエリによるデータ整合を検証し�
 
 最後に結合したクラスタ間距離が、その一つ前に結合したクラスタ間距離の3倍以内の場合は検証OKとします。
 
-## SHACLによるデータ制約検証
+## SHACL constraint validation
 
 Shapes Constraint Language (SHACL)によって指定された制約に違反していないかを検証します。
 
 Shapes Constraint Language (SHACL) | W3C  
 [https://www.w3.org/TR/shacl/](https://www.w3.org/TR/shacl/)
 
-## 文字列トリム検証
+## Literal trim validation
 
 リテラルの先頭・末尾に半角スペースが存在するデータを検証NGとします。
 
-## 文字改行コード検証
+## File encoding validation
 
 ファイルが、設定ファイルで指定した文字コード・改行コードで記載されているかを検証します。指定外の文字コード・改行コードで記載されている場合に検証NGとします。
 

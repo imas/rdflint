@@ -1,31 +1,32 @@
-# ホーム
+# Home
 
-[ホーム](index.md) |
-[セットアップ](setup.md) |
-[使い方](usage.md) |
-[設定ファイル](config.md) |
-[検証ルール](rules.md) |
-[開発者向け](developer.md)
+[Home](index.md) |
+[Setup](setup.md) |
+[Usage](usage.md) |
+[Configuration](config.md) |
+[Rules](rules.md) |
+[Development](developer.md)
 
-*rdflintは、オープンデータを支えるRDFデータをチェックするツールです。データを作成する過程で発生する、文法誤りなどの問題を自動・簡単にチェックする事が出来ます。*
+*rdflint is a linter for RDF files. Easy to check syntax and other things. It helps your data making proces.
 
-rdflintには、以下のようなチェック機能があります。
-- rdf, turtleファイルの文法チェック
-- 未定義の主語が、述語・目的語として使用されていないかのチェック
-- SPARQLを利用したカスタムクエリによるデータ整合チェック
-- SubjectやTripleが誤って削除されていないかのチェック
-- 述語に対するデータ型の妥当性・外れ値がないかのチェック
-- SHACLによるデータ制約に違反がないかのチェック
-- リテラル前後の不要な半角スペースがないかのチェック
-- ファイルの文字コード・改行コードが指定された形式かをチェック
+rdflint has following checking functions.
+- Syntax check of rdf and Turtle(ttl).
+- Undefined subject check when use as predicate or object. 
+- Custom check by SPARQL query.
+- Degrade validation.
+- Datatype & outlier validation.
+- SHACL constraint validation.
+- Literal trim validation.
+- File encoding validation.
 
-チェック機能以外にも、以下のような機能があります。
-- SPARQLクエリの実行結果からのRDFファイル生成
-- ローカルPCでの試験的にSPARQLクエリ実行
+And also has following non-checking functions.
+- RDF generation by SPARQL query results.
+- SPARQL playground on your PC. (Interactive Mode)
 
-## 紹介資料、解説資料
 
-rdflintの紹介資料や解説資料、記事を紹介します。
+## References
+
+You can read unofficial documents about rdflint.
 
 - RDFのチェックツール「rdflint」とコミュニティによるオープンデータの作成 | slideshare  
   [https://www.slideshare.net/takemikami/rdfrdflint-153693907](https://www.slideshare.net/takemikami/rdfrdflint-153693907)
@@ -34,9 +35,9 @@ rdflintの紹介資料や解説資料、記事を紹介します。
 - im@sparqlにContributeしやすくするためにRDFファイルのチェックツールを作った | takemikami.com  
   [https://takemikami.com/2018/12/19/imsparqlContributeRDF.html](https://takemikami.com/2018/12/19/imsparqlContributeRDF.html)
 
-## 利用実績
+## Users
 
-rdflintを導入しているプロジェクトを紹介します。
+Folloing projects use rdflint.
 
 - im@sparql  
   [https://sparql.crssnky.xyz/imas/](https://sparql.crssnky.xyz/imas/)
@@ -47,8 +48,8 @@ rdflintを導入しているプロジェクトを紹介します。
 - ☆ピコピコプラネット☆  
   [https://mltd.pikopikopla.net/](https://mltd.pikopikopla.net/)
 
-## 本利用ガイドについて
+## About this guide
 
-- [個人情報ポリシー](privacy.md)
+- [Privacy Policy](privacy.md)
 
 {{site.cookie_consent}}

@@ -1,91 +1,84 @@
-# セットアップ
+# Setup
 
-[ホーム](index.md) |
-[セットアップ](setup.md) |
-[使い方](usage.md) |
-[設定ファイル](config.md) |
-[検証ルール](rules.md) |
-[開発者向け](developer.md)
+[Home](index.md) |
+[Setup](setup.md) |
+[Usage](usage.md) |
+[Configuration](config.md) |
+[Rules](rules.md) |
+[Development](developer.md)
 
-rdflintのセットアップ手順を説明します。
+How to setup rdflint.
 
-## マニュアルセットアップ
+## Manual Setup
 
-1. rdflintの実行にはJavaの実行環境が必要です。ランタイムがインストールされていない場合は、以下のリンクからJREまたはJDKをダウンロードしてインストールして下さい。
+1. rdflint needs java runtime environment. If you do not have runtime, download and install JRE or JDK from follwing website.
 
    Java SE - Downloads | Oracle Technology Network | Oracle  
    [https://www.oracle.com/technetwork/java/javase/downloads/index.html](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
-2. Javaの実行環境が準備できたら、JitPackからrdflintをダウンロードします。  
-  ブラウザのアドレス欄に``https://jitpack.io/com/github/imas/rdflint/{{site.RDFLINT_VERSION}}/rdflint-{{site.RDFLINT_VERSION}}.jar``と記載してダウンロードします。  
-  wgetコマンドが使える環境であれば、以下のようにダウンロードしても構いません。
+2. Download rdflint from JitPack.  
+   Put your browser ``https://jitpack.io/com/github/imas/rdflint/{{site.RDFLINT_VERSION}}/rdflint-{{site.RDFLINT_VERSION}}.jar`` , and download jar file.  
+   If you like wget, you can use following command.
 
    ```
    $ wget https://jitpack.io/com/github/imas/rdflint/{{site.RDFLINT_VERSION}}/rdflint-{{site.RDFLINT_VERSION}}.jar
    ```
 
-3. rdflintをダウンロードしたディレクトリに移動し、以下のコマンドでrdflintを実行します。  
-   エラーが表示されなければ、準備完了です。
+3. Move to rdflint downloaded directory, and run rdflint with following command.  
+   No error messages is OK.
 
    ```
    $ java -jar rdflint-{{site.RDFLINT_VERSION}}.jar
    ```
 
-## Visual Studio Codeへのセットアップ
+## Setup to Visual Studio Code
 
-1. rdflintの実行にはJavaの実行環境が必要です。ランタイムがインストールされていない場合は、以下のリンクからJREまたはJDKをダウンロードしてインストールして下さい。
+1. rdflint needs java runtime environment. If you do not have runtime, download and install JRE or JDK from follwing website.
 
    Java SE - Downloads | Oracle Technology Network | Oracle  
    [https://www.oracle.com/technetwork/java/javase/downloads/index.html](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
-2. Javaのインストールが完了したら、環境変数「JAVA_HOME」にJavaのインストール先を設定します。  
+2. Set Java installed directory to enviroment variable ``JAVA_HOME`` .  
+   Note. Java installed directory is usually ``C:\Program Files\Java\jdk-(version number)``.
 
-   「エクスプローラー」を開き、「PC」を選択する、  
-   右クリックメニューから「プロパティ」を選ぶ、  
-   「システム」が開くので、の左側メニューで「システムの詳細設定」を選ぶ、  
-   「システムのプロパティ」が開くので、「詳細設定」タブで「環境変数」を選ぶ、  
-   「新規」ボタンを押す、  
-   「変数名」に「JAVA_HOME」を指定、  
-   「ディレクトリの参照」からJavaのインストール先を指定、  
-   「OK」を押す。  
-   ※Javaのインストール先は、変更していなければ「C:\Program Files\Java\jdk-(番号)」などです。
+3. Start Visual Studio Code.  
+   If you already started VSS, restart for activate environment variable.
 
-3. Visual Studio Codeを起動します。（環境変数を有効にするため、既に起動していた場合は一度終了してください）
+4. From Extensions menu(File->Preferences->Extensions),  
+   search with keyword ``rdflint`` etc, and select ``RDF lanauage support via rdflint``  
+   Select ``Install``, and install extention.
 
-4. Extensionsメニュー(File->Preferences->Extensions)から、  
-   「rdflint」などのキーワードで検索し「RDF lanauage support via rdflint」を選びます。  
-   「Install」を押して、拡張機能をインストールします。
+5. From Ctrl+Shift+P menu, select ``rdflint interactive mode: SPARQL playground``  
+   and start rdflint with interactive mode.
 
-5. Ctrl+Shift+Pメニューで、「rdflint interactive mode: SPARQL playground」を選ぶと、  
-   インタラクティブモードでrdflintが起動します。
+## Setup with homebrew - for macOS
 
-## Homebrewによるセットアップ (macOSのみ)
-
-1. Homebrewがインストールされていない場合は、以下のリンクを参照してインストールして下さい。
+1. Install homebrew from following website interaction, if you do not installed yet.
 
    Homebrew  
    [https://brew.sh/index_ja](https://brew.sh/index_ja)
 
-2. Homebrewが使えるようになったら、以下のコマンドでrdflintをインストールします。
+2. Install rdflint with following command.
 
    ```
    $ brew tap imas/rdflint
    $ brew install rdflint
    ```
 
-   ※0.1.1以前に ``takemikami/takemikami`` からインストールしていた方は、以下の手順でHomebrewの参照先を変更してください。
+   Note. If you use ``takemikami/takemikami`` (Before version 0.1.1), change formulaue repository with following step。
 
    ```
    $ brew untap takemikami/takemikami
    $ brew tap imas/rdflint
    ```
 
-3. 以下のコマンドでrdflintを実行し、エラーが表示されなければ、準備完了です。
+3. Run rdflint with following command.  
+   No error messages is OK.
 
    ```
    $ rdflint
    ```
 
-※Homebrewでインストールした場合、「使い方」で``java -jar rdflint-{{site.RDFLINT_VERSION}}.jar``と記載されている箇所は``rdflint``に読み替えて下さい。
+Note, In the case of install by Homebrew, replace ``java -jar rdflint-{{site.RDFLINT_VERSION}}.jar`` to ``rdflint`` in Usage.
 
 {{site.cookie_consent}}
