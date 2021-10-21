@@ -5,6 +5,7 @@ plugins {
     id 'jacoco'
     id 'com.github.johnrengelman.shadow' version '4.0.3'
     id 'com.github.spotbugs' version '4.0.5'
+    id 'maven-publish'
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -88,3 +89,23 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
 }
 build.dependsOn jacocoTestReport, jacocoTestCoverageVerification
 jacocoTestCoverageVerification.mustRunAfter jacocoTestReport
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/imas/rdflint")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            groupId 'com.github.imas'
+            version '0.1.6'
+        }
+    }
+}
