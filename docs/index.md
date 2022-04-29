@@ -45,8 +45,8 @@ Folloing projects use rdflint.
   [https://prismdb.takanakahiko.me/](https://prismdb.takanakahiko.me/)
 - Cashless_Sparql  
   [https://github.com/crssnky/Cashless_Sparql](https://github.com/crssnky/Cashless_Sparql)
-- ☆ピコピコプラネット☆  
-  [https://mltd.pikopikopla.net/](https://mltd.pikopikopla.net/)
+- ☆ピコピコプラネット☆ (closed)  
+  [https://github.com/foooomio/pikopikoplanet](https://github.com/foooomio/pikopikoplanet)
 
 ## About this guide
 
