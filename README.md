@@ -5,7 +5,6 @@ rdflint
 [![Marketplace Version](https://vsmarketplacebadge.apphb.com/version/takemikami.vscode-rdflint.svg "Current Release")](https://marketplace.visualstudio.com/items?itemName=takemikami.vscode-rdflint)
 [![Setup rdflint](https://img.shields.io/badge/GitHub_Marketplace-Setup_rdflint-light_green)](https://github.com/marketplace/actions/setup-rdflint)
 [![ci](https://github.com/imas/rdflint/actions/workflows/ci.yaml/badge.svg)](https://github.com/imas/rdflint/actions/workflows/ci.yaml)
-[![UsersGuide](https://img.shields.io/badge/users_guide-ja-blue)](https://imas.github.io/rdflint/)
 
 [rdflint Users Guide](https://imas.github.io/rdflint/)  
 Note. Currencty translate to English from Japanese. Some part is still in Japanese.
