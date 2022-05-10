@@ -72,7 +72,7 @@ public class RdflintParserBuilder {
     if (this.lang == Lang.RDFXML) {
       return new RdflintParserRdfxml(this.body, this.validators, this.base);
     }
-    return new RdflintParserTurtle(this.body, this.validators);
+    return new RdflintParserTurtle(this.body, this.validators, this.base);
   }
 
 }

@@ -4,33 +4,33 @@ plugins {
     id 'pmd'
     id 'jacoco'
     id 'com.github.johnrengelman.shadow' version '4.0.3'
-    id 'com.github.spotbugs' version '4.0.5'
+    id 'com.github.spotbugs' version '4.7.0'
 }
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {
     mavenCentral()
 }
 dependencies {
-    implementation 'org.apache.jena:jena-arq:3.4.0'
-    implementation 'commons-cli:commons-cli:1.4'
+    implementation 'org.apache.jena:jena-arq:4.5.0'
+    implementation 'commons-cli:commons-cli:1.5.0'
     implementation 'org.jline:jline:3.21.0'
-    implementation 'org.yaml:snakeyaml:1.23'
-    implementation 'org.codehaus.groovy:groovy:3.0.0-rc-3'
+    implementation 'org.yaml:snakeyaml:1.30'
+    implementation 'org.codehaus.groovy:groovy:3.0.10'
     implementation 'org.slf4j:slf4j-log4j12:1.7.25'
-    implementation 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
+    implementation 'org.thymeleaf:thymeleaf:3.0.15.RELEASE'
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.2.2'
-    implementation 'org.reflections:reflections:0.9.11'
+    implementation 'org.reflections:reflections:0.10.2'
     implementation 'com.github.albfernandez:juniversalchardet:2.3.0'
-    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.8.1'
-    implementation group: 'org.topbraid', name: 'shacl', version: '1.3.0'
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.12.0'
+    implementation 'org.topbraid:shacl:1.3.0'
 
     compileOnly 'net.jcip:jcip-annotations:1.0'
-    compileOnly 'com.github.spotbugs:spotbugs:4.0.2'
-    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.0.2'
+    compileOnly 'com.github.spotbugs:spotbugs:4.7.0'
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.0'
 
     testImplementation 'junit:junit:4.+'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
@@ -62,7 +62,7 @@ pmd {
     ]
 }
 spotbugs {
-    toolVersion = '4.0.2'
+    toolVersion = '4.2.1'
 }
 jacocoTestCoverageVerification {
     violationRules {
@@ -75,8 +75,8 @@ jacocoTestCoverageVerification {
 }
 tasks.withType(Checkstyle) {
     reports {
-        xml.enabled = false
-        html.enabled = true
+        xml.enabled(false)
+        html.enabled(true)
     }
 }
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {

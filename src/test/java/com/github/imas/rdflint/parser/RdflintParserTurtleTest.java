@@ -24,7 +24,10 @@ public class RdflintParserTurtleTest {
 
     Graph g = Factory.createGraphMem();
     List<LintProblem> problems = new LinkedList<>();
-    RdflintParser.source(Paths.get(rootPath)).lang(Lang.TURTLE).parse(g, problems);
+    RdflintParser.source(Paths.get(rootPath))
+        .lang(Lang.TURTLE)
+        .base("http://example.com/")
+        .parse(g, problems);
 
     assertFalse(g.size() == 0);
     g.close();
@@ -37,7 +40,10 @@ public class RdflintParserTurtleTest {
 
     Graph g = Factory.createGraphMem();
     List<LintProblem> problems = new LinkedList<>();
-    RdflintParser.source(Paths.get(rootPath)).lang(Lang.TURTLE).parse(g, problems);
+    RdflintParser.source(Paths.get(rootPath))
+        .lang(Lang.TURTLE)
+        .base("http://example.com/")
+        .parse(g, problems);
 
     g.close();
     assertFalse(problems.size() == 0);
@@ -56,6 +62,7 @@ public class RdflintParserTurtleTest {
     List<LintProblem> problems = new LinkedList<>();
     RdflintParser.source(Paths.get(rootPath))
         .lang(Lang.TURTLE)
+        .base("http://example.com/")
         .validators(validators)
         .parse(g, problems);
 

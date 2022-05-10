@@ -21,6 +21,8 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.irix.IRIs;
+import org.apache.jena.irix.SetupJenaIRI;
 import org.apache.jena.rdf.model.RDFErrorHandler;
 import org.apache.jena.rdfxml.xmlinput.ALiteral;
 import org.apache.jena.rdfxml.xmlinput.ARP;
@@ -35,10 +37,9 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.RiotParseException;
 import org.apache.jena.riot.SysRIOT;
-import org.apache.jena.riot.checker.CheckerLiterals;
 import org.apache.jena.riot.lang.ReaderRIOTRDFXML;
+import org.apache.jena.riot.system.Checker;
 import org.apache.jena.riot.system.ErrorHandler;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.util.Context;
@@ -52,16 +53,16 @@ public class RdflintParserRdfxml extends RdflintParser {
 
   String text;
   List<RdfValidator> validators;
-  String baseUri;
+  String base;
 
   /**
    * constructor.
    */
-  public RdflintParserRdfxml(String text, List<RdfValidator> validators, String baseUri) {
+  public RdflintParserRdfxml(String text, List<RdfValidator> validators, String base) {
     super();
     this.text = text;
-    this.baseUri = baseUri;
     this.validators = validators;
+    this.base = base;
   }
 
   @Override
@@ -76,9 +77,9 @@ public class RdflintParserRdfxml extends RdflintParser {
 
     ContentType ct = Lang.RDFXML.getContentType();
     InputStream validateIn = new ByteArrayInputStream(this.text.getBytes(StandardCharsets.UTF_8));
-    try {
-      reader.read(validateIn, baseUri, ct, StreamRDFLib.graph(g), context);
 
+    try {
+      reader.read(validateIn, this.base, ct, StreamRDFLib.graph(g), context);
       if (!parseProblemList.isEmpty()) {
         problems.addAll(parseProblemList);
         return;
@@ -107,13 +108,18 @@ public class RdflintParserRdfxml extends RdflintParser {
   static class ReaderRIOTRDFXML2 // SUPPRESS CHECKSTYLE AbbreviationAsWord
       extends ReaderRIOTRDFXML { // SUPPRESS CHECKSTYLE AbbreviationAsWord
 
-    List<LintProblem> diagnosticList;
+    private final List<RdfValidator> models;
+    private final List<LintProblem> diagnosticList;
 
     public ReaderRIOTRDFXML2(ErrorHandler errorHandler, List<RdfValidator> models) {
       super(errorHandler);
       this.errorHandler = errorHandler;
       this.models = models;
       this.diagnosticList = new LinkedList<>();
+    }
+
+    public List<LintProblem> getDiagnosticList() {
+      return this.diagnosticList;
     }
 
     private ARP arp = new ARP();
@@ -123,29 +129,15 @@ public class RdflintParserRdfxml extends RdflintParser {
     private String filename;
     private StreamRDF sink;
     private ErrorHandler errorHandler;
-    private List<RdfValidator> models;
     private Context context;
 
-    public List<LintProblem> getDiagnosticList() {
-      return this.diagnosticList;
-    }
-
-    /**
-     * Sort out the base URI for RDF/XML parsing.
-     */
-    private static String baseURI_RDFXML( // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
-        String baseIRI) { // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
-      if (baseIRI == null) {
-        return SysRIOT.chooseBaseIRI();
-      } else {
-        // This normalizes the URI.
-        return SysRIOT.chooseBaseIRI(baseIRI);
-      }
-    }
-
     @Override
-    public void read(InputStream in, String baseURI, // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
-        ContentType ct, StreamRDF output, Context context) {
+    public void read(
+        InputStream in,
+        String baseURI, // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
+        ContentType ct,
+        StreamRDF output,
+        Context context) {
       this.input = in;
       this.xmlBase = baseURI_RDFXML(baseURI);
       this.filename = baseURI;
@@ -155,8 +147,12 @@ public class RdflintParserRdfxml extends RdflintParser {
     }
 
     @Override
-    public void read(Reader reader, String baseURI, // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
-        ContentType ct, StreamRDF output, Context context) {
+    public void read(
+        Reader reader,
+        String baseURI, // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
+        ContentType ct,
+        StreamRDF output,
+        Context context) {
       this.reader = reader;
       this.xmlBase = baseURI_RDFXML(baseURI);
       this.filename = baseURI;
@@ -164,6 +160,9 @@ public class RdflintParserRdfxml extends RdflintParser {
       this.context = context;
       parse();
     }
+
+    // RDF 1.1 is based on URIs/IRIs, where space are not allowed.
+    // RDF 1.0 (and RDF/XML) was based on "RDF URI References" which did allow spaces.
 
     // Use with TDB requires this to be "true" - it is set by InitTDB.
     public static boolean RiotUniformCompatibility = false; // NOPMD
@@ -183,7 +182,8 @@ public class RdflintParserRdfxml extends RdflintParser {
     private static boolean errorForSpaceInURI = true;
 
     // Extracted from org.apache.jena.rdfxml.xmlinput.JenaReader
-    private void oneProperty(ARPOptions options, // SUPPRESS CHECKSTYLE ParameterName
+    private void oneProperty(
+        ARPOptions options,
         String pName, // SUPPRESS CHECKSTYLE ParameterName
         Object value) {
       if (!pName.startsWith("ERR_") && !pName.startsWith("IGN_") && !pName.startsWith("WARN_")) {
@@ -244,15 +244,15 @@ public class RdflintParserRdfxml extends RdflintParser {
       }
 
       if (JenaRuntime.isRDF11) {
-        arp.getOptions().setIRIFactory(IRIResolver.iriFactory());
+        arp.getOptions().setIRIFactory(SetupJenaIRI.iriFactory_RDFXML());
       }
 
       if (context != null) {
         Map<String, Object> properties = null;
         try {
           @SuppressWarnings("unchecked")
-          Map<String, Object> p = (Map<String, Object>) (context
-              .get(SysRIOT.sysRdfReaderProperties));
+          Map<String, Object> p = (Map<String, Object>) (context.get(
+              SysRIOT.sysRdfReaderProperties));
           properties = p;
         } catch (Throwable ex) {
           Log.warn(this, "Problem accessing the RDF/XML reader properties: properties ignored", ex);
@@ -269,14 +269,26 @@ public class RdflintParserRdfxml extends RdflintParser {
         } else {
           arp.load(input, xmlBase);
         }
+      } catch (IOException e) {
+        errorHandler.error(filename + ": " + ParseException.formatMessage(e), -1, -1); // NOPMD
       } catch (SAXParseException e) {
         // already reported.
-      } catch (IOException | SAXException | RiotParseException ex) {
-        errorHandler.error(filename + ": " + ParseException.formatMessage(ex), // NOPMD
-            arp.getLocator().getLineNumber(),
-            arp.getLocator().getColumnNumber());
+      } catch (SAXException sax) {
+        errorHandler.error(filename + ": " + ParseException.formatMessage(sax), -1, -1); // NOPMD
       }
       sink.finish();
+    }
+
+    /**
+     * Sort out the base URI for RDF/XML parsing.
+     */
+    private static String baseURI_RDFXML(  // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
+        String baseIRI) {  // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
+      if (baseIRI == null) {
+        return IRIs.getBaseStr();
+      } else {
+        return IRIs.toBase(baseIRI);
+      }
     }
 
     private static class HandlerSink extends ARPSaxErrorHandler implements StatementHandler,
@@ -284,17 +296,15 @@ public class RdflintParserRdfxml extends RdflintParser {
 
       private StreamRDF output;
       private ErrorHandler riotErrorHandler;
-      private CheckerLiterals checker;
       private ARP arp;
       private List<RdfValidator> models;
       private List<LintProblem> diagnosticList;
 
       HandlerSink(StreamRDF output, ErrorHandler errHandler, ARP arp,
           List<RdfValidator> models, List<LintProblem> diagnosticList) {
-        super(new ErrorHandlerBridge(errHandler));
+        super(new ReaderRIOTRDFXML2.ErrorHandlerBridge(errHandler));
         this.output = output;
         this.riotErrorHandler = errHandler;
-        this.checker = new CheckerLiterals(errHandler);
         this.arp = arp;
         this.models = models;
         this.diagnosticList = diagnosticList;
@@ -356,10 +366,8 @@ public class RdflintParserRdfxml extends RdflintParser {
               int i = uriStr.indexOf(' ');
               String s = uriStr.substring(0, i);
               String msg = String.format("Bad character in IRI (space): <%s[space]...>", s);
-              int line = arp.getLocator().getLineNumber();
-              int col = arp.getLocator().getColumnNumber();
-              riotErrorHandler.error(msg, line, col);// NOPMD
-              throw new RiotParseException(msg, line, col);
+              riotErrorHandler.error(msg, -1, -1);
+              throw new RiotParseException(msg, -1, -1);
             }
           }
           return NodeFactory.createURI(uriStr);
@@ -379,11 +387,11 @@ public class RdflintParserRdfxml extends RdflintParser {
       }
 
       private Triple convert(AResource s, AResource p, ALiteral o) {
-        Node object = convert(o);
-        checker.check(object,
+        Node literal = convert(o);
+        Checker.checkLiteral(literal, riotErrorHandler,
             arp.getLocator().getLineNumber(),
             arp.getLocator().getColumnNumber());
-        return Triple.create(convert(s), convert(p), object);
+        return Triple.create(convert(s), convert(p), literal);
       }
 
       @Override
@@ -431,7 +439,6 @@ public class RdflintParserRdfxml extends RdflintParser {
         }
       }
     }
-
   }
 
 }

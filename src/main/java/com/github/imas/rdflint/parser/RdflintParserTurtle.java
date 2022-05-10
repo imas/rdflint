@@ -12,6 +12,7 @@ import org.apache.jena.atlas.web.ContentType;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.irix.IRIxResolver;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParserRegistry;
@@ -20,7 +21,6 @@ import org.apache.jena.riot.ReaderRIOTFactory;
 import org.apache.jena.riot.RiotParseException;
 import org.apache.jena.riot.system.ErrorHandler;
 import org.apache.jena.riot.system.FactoryRDF;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.riot.system.ParserProfileStd;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.PrefixMapFactory;
@@ -40,7 +40,7 @@ public class RdflintParserTurtle extends RdflintParser {
     List<LintProblem> diagnosticList;
     List<RdfValidator> validationModels;
 
-    public RdflintParseProfile(FactoryRDF factory, ErrorHandler errorHandler, IRIResolver resolver,
+    public RdflintParseProfile(FactoryRDF factory, ErrorHandler errorHandler, IRIxResolver resolver,
         PrefixMap prefixMap, Context context, boolean checking, boolean strictMode,
         List<RdfValidator> validationModels, List<LintProblem> diagnosticList) {
       super(factory, errorHandler, resolver, prefixMap, context, checking, strictMode);
@@ -101,14 +101,16 @@ public class RdflintParserTurtle extends RdflintParser {
 
   String text;
   List<RdfValidator> validators;
+  String base;
 
   /**
    * constructor.
    */
-  public RdflintParserTurtle(String text, List<RdfValidator> validators) {
+  public RdflintParserTurtle(String text, List<RdfValidator> validators, String base) {
     super();
     this.text = text;
     this.validators = validators;
+    this.base = base;
   }
 
   @Override
@@ -118,8 +120,8 @@ public class RdflintParserTurtle extends RdflintParser {
     try {
       // validation
       FactoryRDF factory = RiotLib.factoryRDF();
-      IRIResolver resolver = IRIResolver.create();
-      PrefixMap prefixMap = PrefixMapFactory.createForInput();
+      IRIxResolver resolver = IRIxResolver.create().base(this.base).build();
+      PrefixMap prefixMap = PrefixMapFactory.create();
       Context context = new Context();
       boolean checking = true;
       boolean strict = false;
