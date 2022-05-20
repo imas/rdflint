@@ -37,13 +37,13 @@ Use [vscode-rdflint](vscode-rdflint/README.md)
 Download from jitpack.
 
 ```
-$ wget https://jitpack.io/com/github/imas/rdflint/0.1.5/rdflint-0.1.5.jar
+$ wget https://jitpack.io/com/github/imas/rdflint/0.2.0/rdflint-0.2.0.jar
 ```
 
 Run for apply to your RDF files.
 
 ```
-$ java -jar rdflint-0.1.5.jar -targetdir example/dataset
+$ java -jar rdflint-0.2.0.jar -targetdir example/dataset
 ```
 
 ``-targetdir`` parameter is location of target RDF files.
@@ -76,7 +76,7 @@ See [imas/setup-rdflint](https://github.com/imas/setup-rdflint) for more informa
 When create a configuration file of rdflint, rdflint provide additional checks. Run with ``-config`` parameter like following.
 
 ```
-$ java -jar rdflint-0.1.5.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
+$ java -jar rdflint-0.2.0.jar -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
 ``-config`` parameter is location of rdflint configuration file.
@@ -123,7 +123,7 @@ And run SPARQL query of ``rules-query`` to target file of ``rules-target``. Groo
 Run with ``-origindir`` parameter like following.
 
 ```
-$ java -jar rdflint-0.1.5.jar -targetdir example/dataset -origindir example/dataset_origin -config example/dataset/rdflint-config.yml
+$ java -jar rdflint-0.2.0.jar -targetdir example/dataset -origindir example/dataset_origin -config example/dataset/rdflint-config.yml
 ```
 
 And check subject and triple, removed from origindir. Its problem report as INFO level.
@@ -193,7 +193,7 @@ xmlns:imas="https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#"
 Run interactive mode with ``-i`` parameter.
 
 ```
-$ java -jar rdflint-0.1.5.jar -i -targetdir example/dataset -config example/dataset/rdflint-config.yml
+$ java -jar rdflint-0.2.0.jar -i -targetdir example/dataset -config example/dataset/rdflint-config.yml
 ```
 
 And try to query. Double return to perform query, type ``:exit`` to exit interactive mode.
