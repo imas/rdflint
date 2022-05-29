@@ -109,6 +109,9 @@ public class RdfLint {
       if (problems.hasProblem()) {
         Path problemsPath = Paths.get(params.getOutputDir() + "/rdflint-problems.yml");
         LintProblemFormatter.out(System.out, problems);
+        if ("true".equals(System.getenv("GITHUB_ACTIONS"))) {
+          LintProblemFormatter.annotationGitHubAction(System.out, problems);
+        }
         LintProblemFormatter.yaml(Files.newOutputStream(problemsPath), problems);
         final String minErrorLevel = cmd.getOptionValue("minErrorLevel", "WARN");
         final LintProblem.ErrorLevel errorLevel = LintProblem.ErrorLevel.valueOf(minErrorLevel);
