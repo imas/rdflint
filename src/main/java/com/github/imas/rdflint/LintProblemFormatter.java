@@ -1,5 +1,6 @@
 package com.github.imas.rdflint;
 
+import com.github.imas.rdflint.LintProblem.ErrorLevel;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -72,6 +73,42 @@ public class LintProblemFormatter {
         Object[] args = LintProblemFormatter.buildArguments(m);
         String msg = LintProblemFormatter.dumpMessage(m.getKey(), null, args);
         pw.println("  " + m.getLevel() + "  " + msg);
+      });
+      pw.println();
+    });
+    pw.flush();
+  }
+
+  /**
+   * dump formatted problems.
+   */
+  @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING")
+  public static void annotationGitHubAction(OutputStream out, LintProblemSet problems) {
+    PrintWriter pw = new PrintWriter(out);
+    problems.getProblemSet().forEach((f, l) -> {
+      l.forEach(m -> {
+        Object[] args = LintProblemFormatter.buildArguments(m);
+        String msg = LintProblemFormatter.dumpMessage(m.getKey(), null, args);
+        long lineNoBegin = 1;
+        long lineNoEnd = 1;
+        if (m.getLocation() != null && m.getLocation().getBeginLine() >= 0) {
+          lineNoBegin = m.getLocation().getBeginLine();
+          if (m.getLocation().getEndLine() >= 0) {
+            lineNoEnd = m.getLocation().getEndLine();
+          } else {
+            lineNoEnd = lineNoBegin;
+          }
+        }
+        pw.println(String.format(
+            "::%s file=%s,line=%d,endLine=%d,title=%s#L%d::%s",
+            m.getLevel() == ErrorLevel.INFO ? "warning" : "error",
+            f,
+            lineNoBegin,
+            lineNoEnd,
+            f,
+            lineNoBegin,
+            msg
+        ));
       });
       pw.println();
     });
