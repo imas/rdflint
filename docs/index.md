@@ -45,6 +45,8 @@ Folloing projects use rdflint.
   [https://prismdb.takanakahiko.me/](https://prismdb.takanakahiko.me/)
 - Cashless_Sparql  
   [https://github.com/crssnky/Cashless_Sparql](https://github.com/crssnky/Cashless_Sparql)
+- LuciaDB: Lily's unified correlation information as DataBase
+  [https://github.com/Assault-Lily/LuciaDB](https://github.com/Assault-Lily/LuciaDB)
 - ☆ピコピコプラネット☆ (closed)  
   [https://github.com/foooomio/pikopikoplanet](https://github.com/foooomio/pikopikoplanet)
 
