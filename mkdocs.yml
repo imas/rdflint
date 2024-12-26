@@ -1,0 +1,12 @@
+site_name: rdflint
+repo_url: https://github.com/imas/rdflint
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Getting started: getting_started.md
+  - Features: features.md
+  - Rules: rules.md
+  - Configuration: configuration.md
+  - Integration: integration.md
+  - Contributor's guide: contributing.md
