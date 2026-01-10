@@ -1,0 +1,27 @@
+theme: jekyll-theme-hacker
+title: "rdflint: RDF Linter"
+description: "rdflint users guide"
+lang: ja-JP
+google_analytics: UA-150373815-1
+RDFLINT_VERSION: 0.2.1
+cookie_consent: |
+  <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
+  <script>
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": {
+        "background": "#1d8a8a"
+      },
+      "button": {
+        "background": "#62ffaa"
+      }
+    },
+    "position": "bottom-right",
+    "content": {
+      "message": "This web site use cookies for guide and tool improvement.",
+      "dismiss": "OK",
+      "link": "Privacy Policy",
+      "href": "https://imas.github.io/rdflint/privacy.html"
+    }
+  });
+  </script>
